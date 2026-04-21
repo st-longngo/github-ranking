@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getRankings } from '@/lib/rankings';
 import LeaderboardClient from '@/components/LeaderboardClient';
 import { COMPOSITE_WEIGHTS } from '@/types/rankings';
-import { formatNumber, formatRelativeTime } from '@/lib/utils';
+import { formatNumber } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'Leaderboard',

@@ -112,7 +112,6 @@ async function withConcurrency<T>(
 
 async function fetchFromGitHub(): Promise<LanguageMetrics[]> {
   if (!process.env.GITHUB_TOKEN) {
-    console.log('vao day chua')
     // Without a token, rate limit is 10 req/min — use fallback data
     console.warn('[rankings] GITHUB_TOKEN not set — using fallback data');
     return FALLBACK_METRICS;

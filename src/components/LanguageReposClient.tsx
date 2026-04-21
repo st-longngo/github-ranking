@@ -56,7 +56,7 @@ const columns = [
     header: 'Stars',
     cell: info => (
       <span className="font-mono text-amber-600 dark:text-amber-400">
-        ★ {info.getValue().toLocaleString()}
+        {info.getValue().toLocaleString()}
       </span>
     ),
   }),
