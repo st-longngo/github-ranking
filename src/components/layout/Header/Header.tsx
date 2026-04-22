@@ -26,7 +26,7 @@ export default function Header() {
         >
           <BarChart3 className="h-[18px] w-[18px] shrink-0 text-accent" aria-hidden="true" />
           <span className="hidden font-semibold tracking-tight sm:inline">
-            GitHub Language Rankings
+            GitHub Rankings
           </span>
           <span className="font-semibold tracking-tight sm:hidden">GL Rankings</span>
         </Link>

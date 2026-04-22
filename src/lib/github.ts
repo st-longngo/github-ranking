@@ -5,8 +5,15 @@ import { GitHubApiError, RateLimitError } from './errors';
 import { toLanguageSlug } from './utils';
 
 const GITHUB_API_BASE = 'https://api.github.com';
-const CACHE_KEY = 'github:language-metrics';
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes — GitHub data changes slowly
+
+// Per-language SWR cache settings
+// Fresh window: serve as-is. After freshUntil, serve stale + trigger background refresh.
+const LANG_FRESH_TTL_MS = 5 * 60 * 1000;    // 5 min
+const LANG_STALE_TTL_MS = 55 * 60 * 1000;   // 55 min grace → 60 min total lifetime
+
+// Rate-limit check is cached briefly to avoid hammering /rate_limit on concurrent cold-starts
+const RATE_LIMIT_CACHE_KEY = 'github:rate-limit';
+const RATE_LIMIT_CACHE_TTL_MS = 30 * 1000; // 30 seconds
 
 export const LANGUAGES = [
   'JavaScript', 'TypeScript', 'Python', 'Java', 'C#', 'C++',
@@ -93,6 +100,9 @@ async function searchRepos(lang: string): Promise<LanguageMetrics> {
 
 /** Check GitHub Search API rate limit — returns remaining quota, or null on failure. */
 async function checkRateLimit(): Promise<number | null> {
+  const cached = appCache.get<number>(RATE_LIMIT_CACHE_KEY);
+  if (cached !== undefined) return cached;
+
   try {
     const res = await fetch(`${GITHUB_API_BASE}/rate_limit`, {
       headers: getAuthHeaders(),
@@ -102,7 +112,9 @@ async function checkRateLimit(): Promise<number | null> {
     const json = (await res.json()) as {
       resources: { search: { remaining: number; reset: number } };
     };
-    return json.resources.search.remaining;
+    const remaining = json.resources.search.remaining;
+    appCache.set(RATE_LIMIT_CACHE_KEY, remaining, RATE_LIMIT_CACHE_TTL_MS);
+    return remaining;
   } catch {
     return null;
   }
@@ -122,7 +134,6 @@ async function withConcurrency<T>(
     for (let j = 0; j < batchResults.length; j++) {
       results[start + j] = batchResults[j];
     }
-    // Delay between batches to stay under rate limit
     if (batchDelayMs > 0 && start + limit < tasks.length) {
       await new Promise(resolve => setTimeout(resolve, batchDelayMs));
     }
@@ -131,53 +142,158 @@ async function withConcurrency<T>(
   return results;
 }
 
-async function fetchFromGitHub(): Promise<LanguageMetrics[]> {
-  if (!process.env.GITHUB_TOKEN) {
-    console.warn('[rankings] GITHUB_TOKEN not set — using fallback data');
-    return FALLBACK_METRICS;
-  }
-
-  // Check remaining rate limit before making 30 calls
-  const quota = await checkRateLimit();
-  console.log(`[rankings] GitHub Search API remaining quota: ${quota}`);
-  if (quota !== null && quota < LANGUAGES.length) {
-    console.warn(`[rankings] GitHub rate limit too low (${quota} remaining for ${LANGUAGES.length} languages) — using fallback`);
-    return FALLBACK_METRICS;
-  }
-
-  // 5 concurrent requests per batch, 2s delay between batches (6 batches × 5 = 30 calls over ~10s)
-  const tasks = LANGUAGES.map(lang => () => searchRepos(lang));
-  const metrics = await withConcurrency(tasks, 5, 2_000);
-  return metrics;
+/** Cache key for a single language's raw metrics. */
+function langCacheKey(name: string): string {
+  return `github:lang:${name}`;
 }
 
-// Single in-flight fetch — prevents concurrent duplicate calls
-let fetchInFlight: Promise<LanguageMetrics[]> | null = null;
+// Per-language in-flight deduplication — concurrent requests for the same language share one fetch
+const langInFlight = new Map<string, Promise<LanguageMetrics>>();
+
+/** Fetch one language from GitHub, deduplicating concurrent calls. */
+function fetchLanguage(lang: string): Promise<LanguageMetrics> {
+  const existing = langInFlight.get(lang);
+  if (existing) return existing;
+
+  const promise = searchRepos(lang).finally(() => langInFlight.delete(lang));
+  langInFlight.set(lang, promise);
+  return promise;
+}
+
+/**
+ * Background SWR refresh: re-fetches stale languages, skips any already in-flight.
+ * Rate-limit-aware: skips the entire refresh if quota is too low.
+ */
+async function refreshStaleLangs(langs: string[]): Promise<void> {
+  const toRefresh = langs.filter(l => !langInFlight.has(l));
+  if (toRefresh.length === 0) return;
+
+  const quota = await checkRateLimit();
+  if (quota !== null && quota < toRefresh.length) {
+    console.warn(
+      `[rankings] Background refresh skipped: quota (${quota}) < stale langs (${toRefresh.length})`,
+    );
+    return;
+  }
+
+  const tasks = toRefresh.map(lang => async () => {
+    try {
+      const metrics = await fetchLanguage(lang);
+      appCache.set(langCacheKey(lang), metrics, LANG_FRESH_TTL_MS, LANG_STALE_TTL_MS);
+    } catch (err) {
+      console.warn(
+        `[rankings] Background refresh failed for ${lang}:`,
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+  });
+
+  await withConcurrency(tasks, 5, 2_000);
+}
+
+/** Order metrics to match LANGUAGES declaration order, ensuring a stable result. */
+function orderMetrics(metrics: LanguageMetrics[]): LanguageMetrics[] {
+  const byName = new Map(metrics.map(m => [m.name, m]));
+  return (LANGUAGES as readonly string[])
+    .map(l => byName.get(l))
+    .filter((m): m is LanguageMetrics => m !== undefined);
+}
 
 export async function getLanguageMetrics(): Promise<{
   metrics: LanguageMetrics[];
   isStale: boolean;
   rateLimitResetAt?: string;
 }> {
-  const cached = appCache.get<LanguageMetrics[]>(CACHE_KEY);
-  if (cached) return { metrics: cached, isStale: false };
+  // ── Step 1: Categorize all languages by cache freshness ────────────────────
+  const freshMetrics: LanguageMetrics[] = [];
+  const staleMetrics: LanguageMetrics[] = [];
+  const staleLangs: string[] = [];
+  const missingLangs: string[] = [];
 
-  if (!fetchInFlight) {
-    fetchInFlight = fetchFromGitHub().finally(() => {
-      fetchInFlight = null;
+  for (const lang of LANGUAGES) {
+    const result = appCache.getWithStatus<LanguageMetrics>(langCacheKey(lang));
+    if (!result) {
+      missingLangs.push(lang);
+    } else if (result.status === 'fresh') {
+      freshMetrics.push(result.value);
+    } else {
+      staleMetrics.push(result.value);
+      staleLangs.push(lang);
+    }
+  }
+
+  // ── Step 2: Fast path — everything is cached (fresh or stale) ─────────────
+  // Serve immediately; trigger background refresh for stale entries (non-blocking)
+  if (missingLangs.length === 0) {
+    if (staleLangs.length > 0) {
+      void refreshStaleLangs(staleLangs);
+    }
+    return {
+      metrics: orderMetrics([...freshMetrics, ...staleMetrics]),
+      isStale: false,
+    };
+  }
+
+  // ── Step 3: No token — use hardcoded fallback for missing languages ─────────
+  if (!process.env.GITHUB_TOKEN) {
+    console.warn('[rankings] GITHUB_TOKEN not set — using fallback data for missing languages');
+    const fallback = missingLangs
+      .map(l => FALLBACK_METRICS.find(m => m.name === l))
+      .filter((m): m is LanguageMetrics => m !== undefined);
+    return {
+      metrics: orderMetrics([...freshMetrics, ...staleMetrics, ...fallback]),
+      isStale: true,
+    };
+  }
+
+  // ── Step 4: Fetch missing languages inline (request waits for these) ────────
+  const quota = await checkRateLimit();
+  console.log(
+    `[rankings] Fetching ${missingLangs.length} missing languages (quota: ${quota ?? 'unknown'})`,
+  );
+
+  // Only fetch as many as quota permits; fill the rest from hardcoded fallback
+  const fetchable = quota === null ? missingLangs : missingLangs.slice(0, quota);
+  const unfetchable = quota === null ? [] : missingLangs.slice(quota);
+
+  let rateLimitResetAt: string | undefined;
+  const fetchedMetrics: LanguageMetrics[] = [];
+  const fallbackMetrics: LanguageMetrics[] = unfetchable
+    .map(l => FALLBACK_METRICS.find(m => m.name === l))
+    .filter((m): m is LanguageMetrics => m !== undefined);
+
+  if (fetchable.length > 0) {
+    const tasks = fetchable.map(lang => async () => {
+      try {
+        const metrics = await fetchLanguage(lang);
+        appCache.set(langCacheKey(lang), metrics, LANG_FRESH_TTL_MS, LANG_STALE_TTL_MS);
+        fetchedMetrics.push(metrics);
+      } catch (err) {
+        if (err instanceof RateLimitError) rateLimitResetAt = err.resetAt.toISOString();
+        console.warn(
+          `[rankings] Fetch failed for ${lang}:`,
+          err instanceof Error ? err.message : String(err),
+        );
+        const fb = FALLBACK_METRICS.find(m => m.name === lang);
+        if (fb) fallbackMetrics.push(fb);
+      }
     });
+
+    // 5 concurrent per batch, 2 s delay between batches (GitHub Search: 30 req/min limit)
+    await withConcurrency(tasks, 5, 2_000);
   }
 
-  try {
-    const metrics = await fetchInFlight;
-    appCache.set(CACHE_KEY, metrics, CACHE_TTL_MS);
-    return { metrics, isStale: false };
-  } catch (error) {
-    console.error('[rankings] GitHub fetch failed, using fallback:', error);
-    const rateLimitResetAt =
-      error instanceof RateLimitError ? error.resetAt.toISOString() : undefined;
-    return { metrics: FALLBACK_METRICS, isStale: true, rateLimitResetAt };
+  // Trigger background refresh for stale entries (non-blocking)
+  if (staleLangs.length > 0) {
+    void refreshStaleLangs(staleLangs);
   }
+
+  const isStale = fallbackMetrics.length > 0;
+  return {
+    metrics: orderMetrics([...freshMetrics, ...staleMetrics, ...fetchedMetrics, ...fallbackMetrics]),
+    isStale,
+    ...(rateLimitResetAt && { rateLimitResetAt }),
+  };
 }
 
 const REPOS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes

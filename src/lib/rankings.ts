@@ -1,10 +1,6 @@
 import type { LanguageMetrics, LanguageRanking, RankingResponse, NormalizedMetrics } from '@/types/rankings';
 import { COMPOSITE_WEIGHTS, MIN_REPO_THRESHOLD } from '@/types/rankings';
 import { getLanguageMetrics } from './github';
-import { appCache } from './cache';
-
-const COMPUTED_RANKINGS_CACHE_KEY = 'computed:rankings';
-const COMPUTED_RANKINGS_TTL_MS = 30 * 60 * 1000; // match github.ts cache TTL
 
 function minMaxNormalize(values: number[]): number[] {
   const min = Math.min(...values);
@@ -57,27 +53,9 @@ function rankMetrics(metrics: LanguageMetrics[]): LanguageRanking[] {
   return scored.map((lang, i) => ({ ...lang, rank: i + 1 }));
 }
 
-/**
- * Returns computed LanguageRanking[] from cache when possible.
- * Falls back to fetching raw metrics → rankMetrics() on cache miss.
- * This is the hot path: both getRankings() and getLanguageRanking() use it.
- */
-async function getComputedRankings(): Promise<{
-  rankings: LanguageRanking[];
-  isStale: boolean;
-  rateLimitResetAt?: string;
-}> {
-  const cached = appCache.get<LanguageRanking[]>(COMPUTED_RANKINGS_CACHE_KEY);
-  if (cached) return { rankings: cached, isStale: false };
-
+export async function getRankings(): Promise<RankingResponse> {
   const { metrics, isStale, rateLimitResetAt } = await getLanguageMetrics();
   const rankings = rankMetrics(metrics);
-  appCache.set(COMPUTED_RANKINGS_CACHE_KEY, rankings, COMPUTED_RANKINGS_TTL_MS);
-  return { rankings, isStale, rateLimitResetAt };
-}
-
-export async function getRankings(): Promise<RankingResponse> {
-  const { rankings, isStale, rateLimitResetAt } = await getComputedRankings();
 
   return {
     rankings,
@@ -89,8 +67,7 @@ export async function getRankings(): Promise<RankingResponse> {
 
 /**
  * Fetch the ranking for a single language by slug.
- * Uses the computed rankings cache — avoids re-running rankMetrics() on every detail page visit.
- * Also returns all rankings so the page can render related languages without a second fetch.
+ * Shares the same per-language cache as getRankings — no duplicate GitHub API calls.
  */
 export async function getLanguageRanking(slug: string): Promise<{
   language: LanguageRanking | null;
@@ -98,7 +75,8 @@ export async function getLanguageRanking(slug: string): Promise<{
   isStale: boolean;
   rateLimitResetAt?: string;
 }> {
-  const { rankings, isStale, rateLimitResetAt } = await getComputedRankings();
+  const { metrics, isStale, rateLimitResetAt } = await getLanguageMetrics();
+  const rankings = rankMetrics(metrics);
   const language = rankings.find(r => r.slug === slug) ?? null;
   return { language, allRankings: rankings, isStale, rateLimitResetAt };
 }
