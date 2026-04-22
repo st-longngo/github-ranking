@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BarChart3 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
@@ -30,10 +29,6 @@ export default function Header() {
             GitHub Language Rankings
           </span>
           <span className="font-semibold tracking-tight sm:hidden">GL Rankings</span>
-          <Badge variant="live" className="gap-1 px-1.5 py-0.5 text-[10px] uppercase tracking-widest">
-            <span className="live-dot h-1.5 w-1.5" aria-hidden="true" />
-            Live
-          </Badge>
         </Link>
 
         {/* Navigation */}

@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SkeletonTopRanking from '@/components/common/SkeletonTopRanking';
 import {
   Table,
@@ -100,28 +101,19 @@ export default function TopRankingClient({ initialStarsPage1 }: TopRankingClient
       )}
 
       {/* Tab bar */}
-      <div
-        role="tablist"
-        aria-label="Ranking metric tabs"
-        className="flex gap-1 border-b border-border pb-1"
-      >
-        {TABS.map(t => (
-          <button
-            key={t}
-            id={`tab-${t.toLowerCase()}`}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => handleTabChange(t)}
-            className={
-              tab === t
-                ? 'rounded-md px-4 py-2 text-sm font-medium transition-all bg-accent/10 text-accent ring-1 ring-inset ring-accent/25'
-                : 'rounded-md px-4 py-2 text-sm font-medium transition-all text-muted hover:bg-border/50 hover:text-foreground'
-            }
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      <Tabs value={tab} onValueChange={v => handleTabChange(v as Tab)}>
+        <TabsList className="h-auto w-full justify-start gap-0 rounded-none bg-transparent p-0 border-b border-border">
+          {TABS.map(t => (
+            <TabsTrigger
+              key={t}
+              value={t}
+              className="-mb-px rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted shadow-none transition-colors hover:text-foreground data-[state=active]:border-accent data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              {t}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Stats row */}
       <div className="flex items-center justify-between text-xs text-muted">
