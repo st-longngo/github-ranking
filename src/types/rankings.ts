@@ -24,6 +24,8 @@ export interface RankingResponse {
   rankings: LanguageRanking[];
   fetchedAt: string; // ISO string — safe for serialization across RSC boundary
   isStale: boolean;
+  /** ISO string — present when GitHub API rate limit was hit */
+  rateLimitResetAt?: string;
 }
 
 export type SortMetric = 'composite' | 'repositories' | 'stars' | 'forks' | 'activity';
@@ -69,4 +71,11 @@ export interface RepoItem {
   starCount: number;
   forkCount: number;
   pushedAt: string; // ISO string
+}
+
+export interface TopReposPage {
+  repos: RepoItem[];
+  totalCount: number;
+  hasNextPage: boolean;
+  isStale: boolean;
 }

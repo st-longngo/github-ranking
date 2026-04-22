@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Leaderboard' },
+  { href: '/top-ranking', label: 'Top Ranking' },
   { href: '/compare', label: 'Compare' },
   { href: '/visualizations', label: 'Visualizations' },
 ] as const;

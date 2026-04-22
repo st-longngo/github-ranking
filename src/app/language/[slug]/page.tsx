@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { TriangleAlert } from 'lucide-react';
-import { getRankings, findLanguageBySlug, getRelatedLanguages } from '@/lib/rankings';
+import { getLanguageRanking, getRelatedLanguages } from '@/lib/rankings';
 import { formatNumber } from '@/lib/utils';
 import RankBadge from '@/components/ui/RankBadge';
 import MetricBar from '@/components/ui/MetricBar';
@@ -17,23 +17,21 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { rankings } = await getRankings();
-  const lang = findLanguageBySlug(rankings, slug);
-  if (!lang) return { title: 'Not Found' };
+  const { language } = await getLanguageRanking(slug);
+  if (!language) return { title: 'Not Found' };
   return {
-    title: lang.name,
-    description: `${lang.name} is ranked #${lang.rank} with a composite score of ${lang.compositeScore.toFixed(1)} based on GitHub repository activity.`,
+    title: language.name,
+    description: `${language.name} is ranked #${language.rank} with a composite score of ${language.compositeScore.toFixed(1)} based on GitHub repository activity.`,
   };
 }
 
 export default async function LanguageDetailPage({ params }: Props) {
   const { slug } = await params;
-  const { rankings, isStale } = await getRankings();
-  const lang = findLanguageBySlug(rankings, slug);
+  const { language: lang, allRankings, isStale, rateLimitResetAt } = await getLanguageRanking(slug);
 
   if (!lang) notFound();
 
-  const related = getRelatedLanguages(rankings, lang, 5);
+  const related = getRelatedLanguages(allRankings, lang, 5);
 
   const metricRows = [
     {
@@ -76,7 +74,19 @@ export default async function LanguageDetailPage({ params }: Props) {
         ← Back to rankings
       </Link>
 
-      {isStale && (
+      {rateLimitResetAt && (
+        <Alert variant="warning" className="mb-4 flex items-center gap-2">
+          <TriangleAlert className="h-4 w-4" />
+          <AlertDescription>
+            GitHub API rate limit exceeded. Showing cached data. Resets at{' '}
+            <span className="font-mono font-semibold">
+              {new Date(rateLimitResetAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {isStale && !rateLimitResetAt && (
         <Alert variant="warning" className="mb-4 flex items-center gap-2">
           <TriangleAlert className="h-4 w-4" />
           <AlertDescription>Showing estimated data — live GitHub data unavailable.</AlertDescription>

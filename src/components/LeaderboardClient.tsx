@@ -13,7 +13,8 @@ import {
   type ColumnFiltersState,
 } from '@tanstack/react-table';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ArrowUpDown, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, X, TriangleAlert } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { LanguageRanking, RankingResponse } from '@/types/rankings';
 import { LANGUAGE_CATEGORIES, METRIC_LABELS } from '@/types/rankings';
 import { formatNumber, cn } from '@/lib/utils';
@@ -126,10 +127,18 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
       return json.data;
     },
     initialData,
-    refetchInterval: 5 * 60 * 1000,
+    refetchInterval: (query) => {
+      // If rate-limited, wait until the reset time before refetching
+      const resetAt = query.state.data?.rateLimitResetAt;
+      if (resetAt) {
+        const msUntilReset = new Date(resetAt).getTime() - Date.now();
+        return Math.max(msUntilReset + 5_000, 60_000);
+      }
+      return 5 * 60 * 1000; // 30 min — match server cache TTL
+    },
   });
 
-  const { rankings } = data;
+  const { rankings, rateLimitResetAt } = data;
 
   const categoryFiltered = useMemo(() => {
     if (selectedCategories.length === 0) return rankings;
@@ -164,6 +173,18 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
   return (
     <div className="space-y-3">
+      {rateLimitResetAt && (
+        <Alert variant="warning">
+          <TriangleAlert className="h-4 w-4" />
+          <AlertDescription>
+            GitHub API rate limit exceeded. Showing cached data. Resets at{' '}
+            <span className="font-mono font-semibold">
+              {new Date(rateLimitResetAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
           <label htmlFor="lang-search" className="sr-only">Filter languages</label>
