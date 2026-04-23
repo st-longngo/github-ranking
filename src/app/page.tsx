@@ -4,6 +4,10 @@ import LeaderboardClient from '@/components/LeaderboardClient';
 import { COMPOSITE_WEIGHTS } from '@/types/rankings';
 import { formatNumber } from '@/lib/utils';
 
+// Revalidate this page every 5 minutes in the background (ISR).
+// Users always get the cached page instantly; GitHub data is refreshed server-side.
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: 'Leaderboard',
   description:

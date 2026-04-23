@@ -21,11 +21,35 @@ export const metadata: Metadata = {
     template: "%s | GitHub Language Rankings",
   },
   description:
-    "Real-time dashboard ranking programming languages by GitHub activity — repositories, stars, forks, and commit momentum.",
+    "Real-time ranking of programming languages by GitHub activity — repositories, stars, forks, and commit momentum. Compare JavaScript, Python, TypeScript, Rust, Go, and 25+ more.",
+  keywords: [
+    "GitHub language rankings",
+    "programming language popularity",
+    "GitHub statistics",
+    "top programming languages",
+    "developer trends",
+    "open source rankings",
+  ],
+  authors: [{ name: "GitHub Language Rankings" }],
+  creator: "GitHub Language Rankings",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
   openGraph: {
     title: "GitHub Language Rankings",
-    description: "Rank programming languages by real GitHub activity.",
+    description:
+      "Real-time ranking of programming languages by GitHub activity — repositories, stars, forks, and commit momentum.",
     type: "website",
+    locale: "en_US",
+    siteName: "GitHub Language Rankings",
+  },
+  twitter: {
+    card: "summary",
+    title: "GitHub Language Rankings",
+    description:
+      "Real-time ranking of programming languages by GitHub activity — repositories, stars, forks, and commit momentum.",
   },
 };
 

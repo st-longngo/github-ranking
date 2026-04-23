@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   useReactTable,
   getCoreRowModel,
@@ -12,8 +13,7 @@ import {
   type SortingState,
   type ColumnFiltersState,
 } from '@tanstack/react-table';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowDown, ArrowUp, ArrowUpDown, X, TriangleAlert } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, X, TriangleAlert, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { LanguageRanking, RankingResponse } from '@/types/rankings';
 import { LANGUAGE_CATEGORIES, METRIC_LABELS } from '@/types/rankings';
@@ -112,33 +112,21 @@ const columns = [
 ];
 
 export default function LeaderboardClient({ initialData }: LeaderboardClientProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const [sorting, setSorting]             = useState<SortingState>([{ id: 'composite', desc: true }]);
   const [globalFilter, setGlobalFilter]   = useState('');
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // TanStack Query — refetches every 5 min; initialData shown immediately from SSR
-  const { data, isFetching, dataUpdatedAt } = useQuery<RankingResponse>({
-    queryKey: ['rankings'],
-    queryFn: async () => {
-      const res = await fetch('/api/rankings');
-      if (!res.ok) throw new Error('Failed to fetch rankings');
-      const json = (await res.json()) as { data: RankingResponse };
-      return json.data;
-    },
-    initialData,
-    refetchInterval: (query) => {
-      // If rate-limited, wait until the reset time before refetching
-      const resetAt = query.state.data?.rateLimitResetAt;
-      if (resetAt) {
-        const msUntilReset = new Date(resetAt).getTime() - Date.now();
-        return Math.max(msUntilReset + 5_000, 60_000);
-      }
-      return 5 * 60 * 1000; // 30 min — match server cache TTL
-    },
-  });
+  const { rankings, fetchedAt, rateLimitResetAt } = initialData;
 
-  const { rankings, rateLimitResetAt } = data;
+  function handleRefresh() {
+    startTransition(() => {
+      router.refresh();
+    });
+  }
 
   const categoryFiltered = useMemo(() => {
     if (selectedCategories.length === 0) return rankings;
@@ -167,8 +155,8 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
     );
   }
 
-  const updatedAt = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const updatedAt = fetchedAt
+    ? new Date(fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
 
   return (
@@ -211,12 +199,24 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
         <p className="shrink-0 font-mono text-xs text-muted">
           {rows.length}/{rankings.length} languages ·{' '}
-          {isFetching ? (
+          {isPending ? (
             <span className="text-accent">updating…</span>
           ) : updatedAt ? (
             <span><span className="text-live">●</span> {updatedAt}</span>
           ) : null}
         </p>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isPending}
+          aria-label="Refresh rankings"
+          className="h-7 gap-1.5 px-2 text-xs text-muted hover:text-foreground"
+        >
+          <RefreshCw className={cn('h-3 w-3', isPending && 'animate-spin')} />
+          Refresh
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by category">

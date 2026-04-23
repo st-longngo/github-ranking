@@ -298,7 +298,7 @@ export async function getLanguageMetrics(): Promise<{
 
 const REPOS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const TOP_REPOS_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
-const TOP_REPOS_PER_PAGE = 20;
+const TOP_REPOS_PER_PAGE = 50;
 
 export type TopRepoType = 'stars' | 'forks' | 'trending';
 
