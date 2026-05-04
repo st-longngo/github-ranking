@@ -1,19 +1,26 @@
 import type { Metadata } from 'next';
-import { getTopRepos } from '@/lib/github';
-import TopRankingClient from '@/components/TopRankingClient';
+import { getTopRepos, getTopUsers, getTopOrgs } from '@/lib/github';
+import TopRankingOverview from '@/components/TopRankingOverview';
 
 export const metadata: Metadata = {
   title: 'Top Ranking',
-  description: 'Top GitHub repositories ranked by Stars, Forks, or recent Trending activity.',
+  description: 'Top GitHub users, organizations, and repositories ranked by stars.',
 };
 
 export default async function TopRankingPage() {
-  // SSR only the default tab (Stars, page 1) — subsequent pages/tabs fetch via Route Handler
-  const initialStarsPage1 = await getTopRepos('stars', 1);
+  const [usersData, orgsData, reposData] = await Promise.all([
+    getTopUsers(1),
+    getTopOrgs(1),
+    getTopRepos('stars', 1),
+  ]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <TopRankingClient initialStarsPage1={initialStarsPage1} />
+      <TopRankingOverview
+        initialUsers={usersData}
+        initialOrgs={orgsData}
+        initialRepos={reposData}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { LanguageMetrics, RepoItem, TopReposPage } from '@/types/rankings';
+import type { LanguageMetrics, RepoItem, TopReposPage, TopUserItem, TopUsersPage, TopOrgItem, TopOrgsPage } from '@/types/rankings';
 import { appCache } from './cache';
 import { FALLBACK_METRICS } from './fallback-data';
 import { GitHubApiError, RateLimitError } from './errors';
@@ -298,7 +298,7 @@ export async function getLanguageMetrics(): Promise<{
 
 const REPOS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const TOP_REPOS_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
-const TOP_REPOS_PER_PAGE = 50;
+const TOP_REPOS_PER_PAGE = 100;
 
 export type TopRepoType = 'stars' | 'forks' | 'trending';
 
@@ -344,8 +344,6 @@ export async function getTopRepos(type: TopRepoType, page = 1): Promise<TopRepos
     if (!res.ok) return { repos: [], totalCount: 0, hasNextPage: false, isStale: true };
 
     const json = (await res.json()) as SearchResponse;
-    // GitHub Search API caps accessible results at 1000
-    const accessibleTotal = Math.min(json.total_count, 1000);
     const startRank = (page - 1) * TOP_REPOS_PER_PAGE + 1;
 
     const repos: RepoItem[] = json.items.map((item, i) => ({
@@ -361,7 +359,7 @@ export async function getTopRepos(type: TopRepoType, page = 1): Promise<TopRepos
     const result: TopReposPage = {
       repos,
       totalCount: json.total_count,
-      hasNextPage: page * TOP_REPOS_PER_PAGE < accessibleTotal,
+      hasNextPage: json.items.length === TOP_REPOS_PER_PAGE,
       isStale: false,
     };
 
@@ -406,5 +404,122 @@ export async function getLanguageRepos(languageName: string): Promise<RepoItem[]
     return repos;
   } catch {
     return [];
+  }
+}
+
+// ─── Top Users / Organizations ────────────────────────────────
+
+interface SearchUserItem {
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  type: string;
+  followers: number;
+}
+
+interface SearchUsersResponse {
+  total_count: number;
+  items: SearchUserItem[];
+}
+
+const TOP_USERS_PER_PAGE = 100;
+
+export async function getTopUsers(page = 1): Promise<TopUsersPage> {
+  const cacheKey = `github:top-users:${page}`;
+  const cached = appCache.get<TopUsersPage>(cacheKey);
+  if (cached) return cached;
+
+  if (!process.env.GITHUB_TOKEN) {
+    return { users: [], totalCount: 0, hasNextPage: false, isStale: true };
+  }
+
+  try {
+    const params = new URLSearchParams({
+      q: 'type:user followers:>1000',
+      sort: 'followers',
+      order: 'desc',
+      per_page: String(TOP_USERS_PER_PAGE),
+      page: String(page),
+    });
+
+    const res = await fetch(`${GITHUB_API_BASE}/search/users?${params}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return { users: [], totalCount: 0, hasNextPage: false, isStale: true };
+
+    const json = (await res.json()) as SearchUsersResponse;
+    const startRank = (page - 1) * TOP_USERS_PER_PAGE + 1;
+
+    const users: TopUserItem[] = json.items.map((item, i) => ({
+      rank: startRank + i,
+      login: item.login,
+      avatarUrl: item.avatar_url,
+      htmlUrl: item.html_url,
+      followers: item.followers ?? 0,
+    }));
+
+    const result: TopUsersPage = {
+      users,
+      totalCount: json.total_count,
+      hasNextPage: json.items.length === TOP_USERS_PER_PAGE,
+      isStale: false,
+    };
+
+    appCache.set(cacheKey, result, TOP_REPOS_CACHE_TTL_MS);
+    return result;
+  } catch {
+    return { users: [], totalCount: 0, hasNextPage: false, isStale: true };
+  }
+}
+
+export async function getTopOrgs(page = 1): Promise<TopOrgsPage> {
+  const cacheKey = `github:top-orgs:${page}`;
+  const cached = appCache.get<TopOrgsPage>(cacheKey);
+  if (cached) return cached;
+
+  if (!process.env.GITHUB_TOKEN) {
+    return { orgs: [], totalCount: 0, hasNextPage: false, isStale: true };
+  }
+
+  try {
+    const params = new URLSearchParams({
+      q: 'type:org followers:>1000',
+      sort: 'followers',
+      order: 'desc',
+      per_page: String(TOP_USERS_PER_PAGE),
+      page: String(page),
+    });
+
+    const res = await fetch(`${GITHUB_API_BASE}/search/users?${params}`, {
+      headers: getAuthHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return { orgs: [], totalCount: 0, hasNextPage: false, isStale: true };
+
+    const json = (await res.json()) as SearchUsersResponse;
+    const startRank = (page - 1) * TOP_USERS_PER_PAGE + 1;
+
+    const orgs: TopOrgItem[] = json.items.map((item, i) => ({
+      rank: startRank + i,
+      login: item.login,
+      avatarUrl: item.avatar_url,
+      htmlUrl: item.html_url,
+      followers: item.followers ?? 0,
+    }));
+
+    const result: TopOrgsPage = {
+      orgs,
+      totalCount: json.total_count,
+      hasNextPage: json.items.length === TOP_USERS_PER_PAGE,
+      isStale: false,
+    };
+
+    appCache.set(cacheKey, result, TOP_REPOS_CACHE_TTL_MS);
+    return result;
+  } catch {
+    return { orgs: [], totalCount: 0, hasNextPage: false, isStale: true };
   }
 }

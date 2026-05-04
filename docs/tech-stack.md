@@ -26,8 +26,8 @@
 
 ### UI & Components
 - **React 19 Server/Client Components** — server components fetch data directly; `'use client'` only where browser APIs or hooks are required
-- **TanStack Table v8** (`@tanstack/react-table`) — headless table for the leaderboard with sorting, filtering
-- **Recharts v3** — `BarChart`, `PieChart`, `ScatterChart`, `RadarChart` for the Visualizations and Compare pages
+- **TanStack Table v8** (`@tanstack/react-table`) — headless table for per-language repo list with sorting
+- **Recharts v3** — `AreaChart` for the star history panel in `RepoExplorer`
 - **TanStack Query v5** (`@tanstack/react-query`) — client-side data fetching with 5-minute stale time, initial data seeded from SSR
 
 ### Styling

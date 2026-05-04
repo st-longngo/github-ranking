@@ -24,7 +24,7 @@ flowchart LR
     A[GitHub API] -->|Fetch real-time data| B[Data Processing]
     B -->|Compute scores| C[Ranking Engine]
     C -->|Serve rankings| D[Dashboard UI]
-    D -->|Browse / Filter / Compare| E[User]
+    D -->|Browse / Explore / Discover| E[User]
 ```
 
 ### 1.2 In Scope
@@ -32,10 +32,11 @@ flowchart LR
 - Real-time language ranking using live GitHub API data
 - Four core metric dimensions: repository count, stars, forks, and activity (commits + PRs)
 - Custom composite score combining all signals into a single weighted ranking
-- Full dashboard with multiple views: leaderboard, detail cards, comparison tool
+- Full dashboard with multiple views: leaderboard explorer, language detail, top repos
+- Trending repository sidebar (weekly, all-time, random discovery modes)
+- Repository explorer with search, star history chart, and release browser
 - Filtering by time period, metric type, and language subset
 - Search for specific languages
-- Interactive charts and data visualizations
 - Responsive design (mobile, tablet, desktop)
 - Dark mode support
 - Public read-only access (no authentication required)
@@ -66,9 +67,9 @@ flowchart LR
 ### 2.1 Developer (Primary)
 
 - **Description**: A working software developer exploring new technologies or validating current stack choices
-- **Goals**: Quickly see which languages are trending, compare two or three languages side-by-side, understand momentum beyond hype
+- **Goals**: Quickly see which languages are trending, explore real repositories, understand momentum beyond hype
 - **Pain Points**: Existing rankings feel outdated, biased by surveys, or lack granularity; hard to distinguish "popular" from "actively growing"
-- **Key Interactions**: Views leaderboard, filters by metric, compares languages, searches for a specific language
+- **Key Interactions**: Views leaderboard, filters by metric, explores trending repos, searches for a specific repository
 
 ### 2.2 Engineering Manager
 
@@ -96,8 +97,9 @@ flowchart LR
 1. **Browse Rankings** — Land on the dashboard, see the default composite leaderboard
 2. **Filter & Sort** — Change ranking metric (stars, forks, repos, activity, composite), adjust time scope
 3. **Search** — Find a specific language by name
-4. **Compare** — Select two or more languages for side-by-side metric comparison
-5. **Explore Details** — Click a language to see its full metric breakdown
+4. **Explore Repos** — Browse trending repos in the sidebar; search and inspect any GitHub repo
+5. **Repository Deep-Dive** — View star history chart and latest releases for a selected repository
+6. **Language Detail** — Click a language to see its full metric breakdown and top repositories
 
 ### 3.2 Internal / Admin Surfaces
 
@@ -110,11 +112,9 @@ None — this is a public, read-only application with no admin portal.
 | # | Epic | Description |
 |---|------|-------------|
 | E1 | **Ranking Engine** | Fetch, process, and score programming languages from GitHub data |
-| E2 | **Leaderboard** | Display ranked list of languages with sortable metrics |
-| E3 | **Language Detail** | Show comprehensive metric breakdown for a single language |
-| E4 | **Comparison Tool** | Side-by-side comparison of two or more languages |
-| E5 | **Search & Filter** | Find and narrow languages by name, metric, or category |
-| E6 | **Data Visualization** | Charts and graphs to visualize rankings and distributions |
+| E2 | **Leaderboard Explorer** | Two-panel explorer: trending sidebar + repository search, star history, and releases |
+| E3 | **Top Ranking** | Top repositories across all languages by stars, forks, and trending |
+| E4 | **Language Detail** | Show comprehensive metric breakdown for a single language |
 | E7 | **Responsive Shell** | App layout, navigation, dark mode, responsive design |
 
 ---
@@ -130,46 +130,24 @@ None — this is a public, read-only application with no admin portal.
 | **F1.3 Per-Metric Rankings** | Rank languages independently by each metric dimension (repos, stars, forks, activity) | Allow users to explore beyond the composite view | Each metric produces a distinct, consistent ordering |
 | **F1.4 Rate Limit Management** | Handle GitHub API rate limits gracefully with caching and request optimization | Ensure the dashboard remains available without hitting API quotas | System never displays stale data older than a defined threshold; rate limit errors are handled transparently |
 
-### E2: Leaderboard
+### E2: Leaderboard Explorer
 
 | Feature | Description | Business Objective | Acceptance Intent |
 |---------|-------------|--------------------|-------------------|
-| **F2.1 Ranked Language Table** | Display languages in a sortable table with position, name, composite score, and individual metrics | Primary surface for understanding language rankings at a glance | Top 50+ languages visible, sorted by composite score by default |
+| **F2.1 Ranked Language Table** | Display languages in a sortable table with position, name, composite score, and individual metrics | Primary surface for understanding language rankings at a glance | Top 30 languages visible, sorted by composite score by default |
 | **F2.2 Metric Sorting** | Allow users to re-sort the leaderboard by any individual metric column | Let users explore rankings from different angles | Clicking a column header re-sorts; active sort column is visually indicated |
-| **F2.3 Ranking Position Indicators** | Show each language's rank position with visual differentiation for top 3 (gold, silver, bronze style) | Make the leaderboard engaging and scannable | Top 3 are visually distinct; all languages show their numeric rank |
+| **F2.3 Ranking Position Indicators** | Show each language’s rank position with visual differentiation for top 3 (gold, silver, bronze style) | Make the leaderboard engaging and scannable | Top 3 are visually distinct; all languages show their numeric rank |
 | **F2.4 Pagination or Infinite Scroll** | Handle large language lists beyond the initial viewport | Ensure all languages are accessible, not just the top few | Users can access the full list; performance remains smooth |
+| **F2.5 Trending Repository Sidebar** | Left sidebar listing trending GitHub repos across Weekly, All-time, and Random discovery modes | Surface live GitHub momentum data alongside language rankings | Tabs switch modes instantly; each item shows rank, avatar, name, stars, and weekly delta |
+| **F2.6 Repository Explorer** | Central panel with repo search autocomplete, star history area chart, and release browser | Let users research any GitHub repo in context | Search shows 5 live results; chart renders up to 10 sampled history points; releases show tag, date, GitHub link |
 
 ### E3: Language Detail
 
 | Feature | Description | Business Objective | Acceptance Intent |
 |---------|-------------|--------------------|-------------------|
-| **F3.1 Detail View** | Full metric breakdown for a selected language: repo count, total stars, total forks, activity score, composite score | Provide depth for users who want to understand a language's data | All metrics displayed clearly with context (e.g., percentiles or relative position) |
-| **F3.2 Metric Distribution** | Show how the language's metrics compare to the overall distribution | Help users understand whether a language is an outlier or in the pack | Visual representation of where the language sits relative to average/median |
+| **F3.1 Detail View** | Full metric breakdown for a selected language: repo count, total stars, total forks, activity score, composite score | Provide depth for users who want to understand a language’s data | All metrics displayed clearly with context (e.g., percentiles or relative position) |
+| **F3.2 Metric Distribution** | Show how the language’s metrics compare to the overall distribution | Help users understand whether a language is an outlier or in the pack | Visual representation of where the language sits relative to average/median |
 | **F3.3 Related Languages** | Suggest similar or adjacent languages based on metric profile | Help users discover languages they might not have considered | 3-5 related languages shown with reasoning |
-
-### E4: Comparison Tool
-
-| Feature | Description | Business Objective | Acceptance Intent |
-|---------|-------------|--------------------|-------------------|
-| **F4.1 Language Selection** | Allow users to select 2-4 languages for comparison | Enable direct head-to-head analysis | Users can add/remove languages; minimum 2 required |
-| **F4.2 Side-by-Side Metrics** | Display selected languages' metrics in a comparative layout (table or chart) | Make differences immediately visible | All metric dimensions shown; differences highlighted |
-| **F4.3 Radar Chart** | Visualize compared languages on a radar/spider chart across all metric dimensions | Provide an intuitive "shape" comparison | Each language is a distinct line/color; all axes labeled |
-
-### E5: Search & Filter
-
-| Feature | Description | Business Objective | Acceptance Intent |
-|---------|-------------|--------------------|-------------------|
-| **F5.1 Language Search** | Type-ahead search to find a language by name | Quick access to a specific language without scrolling | Results appear as-you-type; matching is case-insensitive; no results state handled |
-| **F5.2 Metric Filter** | Filter the leaderboard to show only languages above a threshold for a given metric | Help users focus on meaningful subsets (e.g., "languages with 10K+ repos") | Filter applies instantly; leaderboard re-ranks within the filtered set |
-| **F5.3 Category Tags** | Group languages by paradigm or type (compiled, interpreted, functional, OOP, scripting, systems) | Help users explore languages by characteristic | Tags are pre-defined; selecting a tag filters the leaderboard |
-
-### E6: Data Visualization
-
-| Feature | Description | Business Objective | Acceptance Intent |
-|---------|-------------|--------------------|-------------------|
-| **F6.1 Bar Chart Rankings** | Horizontal bar chart showing top N languages by selected metric | Visually engaging alternative to the table view | Chart updates when metric selection changes; shows top 10-20 |
-| **F6.2 Bubble Chart** | Scatter/bubble chart with configurable axes (e.g., stars vs. forks, bubble size = repos) | Reveal correlations between metrics | Users can select which metric maps to each axis; interactive tooltips |
-| **F6.3 Pie/Donut Chart** | Market share visualization showing proportional distribution of a metric across top languages | Communicate relative dominance quickly | Shows top 10 + "Other" grouping; percentages labeled |
 
 ### E7: Responsive Shell
 

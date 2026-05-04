@@ -34,7 +34,7 @@ graph TD
     end
 
     subgraph "Client Bundle"
-        CC["Client Components\n('use client')\nLeaderboardClient | ComparisonClient\nVisualizationsClient | LanguageReposClient"]
+        CC["Client Components\n('use client')\nLeaderboardExplorerClient | TrendingSidebar\nRepoExplorer | LanguageReposClient | TopRankingClient"]
         TQ["TanStack Query\ninitialData from SSR"]
     end
 
@@ -59,10 +59,9 @@ graph TD
 | File | Role |
 |------|------|
 | `layout.tsx` | Root layout — sets metadata, loads fonts, wraps in `QueryProvider` + `Header` + `Footer` |
-| `page.tsx` | Leaderboard — SSR, computes stat cards server-side, delegates table to `LeaderboardClient` |
+| `page.tsx` | Leaderboard — renders `LeaderboardExplorerClient` |
 | `language/[slug]/page.tsx` | Language detail — dynamic SSR, `notFound()` guard, passes data to `LanguageReposClient` |
-| `compare/page.tsx` | Comparison tool — SSR shell, passes all rankings to `ComparisonClient` |
-| `visualizations/page.tsx` | Charts page — SSR shell, passes rankings to `VisualizationsClient` |
+| `top-ranking/page.tsx` | Top repos — SSR shell, delegates to `TopRankingClient` |
 | `error.tsx` | App-level error boundary (Client Component) |
 | `not-found.tsx` | 404 fallback |
 | `loading.tsx` | Suspense skeleton per route |
@@ -74,9 +73,10 @@ graph TD
 | `Header.tsx` | Client | Sticky nav with active-link detection via `usePathname` |
 | `Footer.tsx` | Server | Static footer |
 | `QueryProvider.tsx` | Client | TanStack Query `QueryClient` singleton wrapper |
-| `LeaderboardClient.tsx` | Client | TanStack Table with sorting, search, category filter, live-refresh |
-| `ComparisonClient.tsx` | Client | Multi-select language picker + Recharts RadarChart |
-| `VisualizationsClient.tsx` | Client | Tab-based Recharts charts (bar, bubble, donut) |
+| `LeaderboardExplorerClient.tsx` | Client | Orchestrates two-panel layout; manages `selectedRepo` state and mobile drawer |
+| `TrendingSidebar.tsx` | Client | Weekly/All-time/Random trending repos tabs; fetches `/api/trending-repos` |
+| `RepoExplorer.tsx` | Client | Repo search autocomplete, star history `AreaChart`, release list |
+| `TopRankingClient.tsx` | Client | Top repos tabs by type + pagination |
 | `LanguageReposClient.tsx` | Client | Per-language repo list with TanStack Query fetch |
 | `RankBadge.tsx` | Server | Medal badge (gold/silver/bronze/numeric) |
 | `MetricBar.tsx` | Server | Horizontal progress bar for normalized scores |
@@ -88,6 +88,7 @@ graph TD
 |--------|---------------|
 | `github.ts` | GitHub API calls, concurrency limiter, in-flight deduplication, auth headers |
 | `rankings.ts` | Min-max normalization, composite score, ranking sort, slug lookup, related language distance |
+| `trending.ts` | Trending repos, repo releases, repo search, star history sampling |
 | `cache.ts` | `MemoryCache` class with TTL; `globalThis` singleton for HMR safety |
 | `errors.ts` | `AppError` hierarchy: `GitHubApiError`, `RateLimitError`, `NotFoundError` |
 | `utils.ts` | `cn()`, `formatNumber()`, `formatRelativeTime()`, `toLanguageSlug()`, slug→name map |
@@ -95,7 +96,7 @@ graph TD
 
 ### `types/` — Shared Types
 
-`rankings.ts` owns all domain types: `LanguageMetrics`, `LanguageRanking`, `RankingResponse`, `NormalizedMetrics`, `SortMetric`, constants `COMPOSITE_WEIGHTS`, `MIN_REPO_THRESHOLD`, `LANGUAGE_CATEGORIES`.
+`rankings.ts` owns all domain types: `LanguageMetrics`, `LanguageRanking`, `RankingResponse`, `NormalizedMetrics`, `SortMetric`, `TrendingMode`, `TrendingRepo`, `TrendingReposResponse`, `RepoRelease`, `RepoReleasesResponse`, `RepoSearchResult`, `StarDataPoint`, constants `COMPOSITE_WEIGHTS`, `MIN_REPO_THRESHOLD`, `LANGUAGE_CATEGORIES`.
 
 ---
 
@@ -164,7 +165,10 @@ Request
 
 | Layer | Mechanism | TTL |
 |-------|-----------|-----|
-| In-process | `MemoryCache` (Map) | 5 minutes |
+| In-process (rankings) | `MemoryCache` (Map) | 5 minutes |
+| In-process (trending) | `MemoryCache` (Map) | 10 minutes |
+| In-process (releases) | `MemoryCache` (Map) | 15 minutes |
+| In-process (star history) | `MemoryCache` (Map) | 30 minutes |
 | HTTP (fetch) | `cache: 'no-store'` | Bypassed — managed manually |
 | TanStack Query | client `staleTime` | 5 minutes |
 | TanStack Query | client `gcTime` | 10 minutes |
@@ -214,6 +218,12 @@ AppError (base)
 |----------|--------|------|-------|
 | `GET /api/rankings` | GET | None | `force-dynamic`; returns full `RankingResponse` |
 | `GET /api/language-repos?lang=<slug>` | GET | None | Returns top repos for one language |
+| `GET /api/top-repos?type=<type>&page=<n>` | GET | None | Top repos by stars/forks/trending |
+| `GET /api/language/[slug]` | GET | None | Single language metrics |
+| `GET /api/trending-repos?mode=<mode>` | GET | None | Weekly/all-time/random trending repos |
+| `GET /api/repo-search?q=<query>` | GET | None | Search repos by name, returns 5 results |
+| `GET /api/repo-releases?owner=<o>&repo=<r>` | GET | None | Latest 10 releases for a repo |
+| `GET /api/repo-stars?owner=<o>&repo=<r>` | GET | None | Sampled star history for chart |
 
 ### Response shape
 ```json

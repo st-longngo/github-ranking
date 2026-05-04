@@ -79,3 +79,80 @@ export interface TopReposPage {
   hasNextPage: boolean;
   isStale: boolean;
 }
+
+// ─── Top Users / Organizations ────────────────────────────────
+export interface TopUserItem {
+  rank: number;
+  login: string;
+  avatarUrl: string;
+  htmlUrl: string;
+  followers: number;
+}
+
+export interface TopUsersPage {
+  users: TopUserItem[];
+  totalCount: number;
+  hasNextPage: boolean;
+  isStale: boolean;
+}
+
+export interface TopOrgItem {
+  rank: number;
+  login: string;
+  avatarUrl: string;
+  htmlUrl: string;
+  followers: number;
+}
+
+export interface TopOrgsPage {
+  orgs: TopOrgItem[];
+  totalCount: number;
+  hasNextPage: boolean;
+  isStale: boolean;
+}
+
+// ─── Trending Repos (Sidebar) ─────────────────────────────────
+export type TrendingMode = 'weekly' | 'all-time' | 'random';
+
+export interface TrendingRepo {
+  rank: number;
+  fullName: string;
+  htmlUrl: string;
+  description: string | null;
+  starCount: number;
+  forkCount: number;
+  pushedAt: string;
+  ownerAvatar: string;
+  weeklyStarDelta: number;
+}
+
+export interface TrendingReposResponse {
+  repos: TrendingRepo[];
+  mode: TrendingMode;
+  isStale: boolean;
+}
+
+// ─── Repository Releases (Explorer) ──────────────────────────
+export interface RepoRelease {
+  tagName: string;
+  name: string | null;
+  publishedAt: string;
+  htmlUrl: string;
+}
+
+export interface RepoSearchResult {
+  fullName: string;
+  description: string | null;
+  starCount: number;
+  ownerAvatar: string;
+}
+
+export interface RepoReleasesResponse {
+  releases: RepoRelease[];
+  repoFullName: string;
+}
+
+export interface StarDataPoint {
+  date: string;  // "YYYY-MM-DD"
+  stars: number; // cumulative star count
+}
