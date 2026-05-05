@@ -1,9 +1,9 @@
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t border-border bg-surface">
-      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+    <footer className="mt-auto border-t border-border">
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
         <p className="text-center text-xs text-muted">
-          Made by Long Ngo
+          Built by Long Ngo &middot; Data from the GitHub API
         </p>
       </div>
     </footer>

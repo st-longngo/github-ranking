@@ -27,6 +27,7 @@ interface SearchRepoItem {
   full_name: string;
   html_url: string;
   description: string | null;
+  owner: { avatar_url: string };
   stargazers_count: number;
   forks_count: number;
   pushed_at: string;
@@ -351,6 +352,7 @@ export async function getTopRepos(type: TopRepoType, page = 1): Promise<TopRepos
       fullName: item.full_name,
       htmlUrl: item.html_url,
       description: item.description,
+      ownerAvatar: item.owner?.avatar_url ?? null,
       starCount: item.stargazers_count,
       forkCount: item.forks_count,
       pushedAt: item.pushed_at,

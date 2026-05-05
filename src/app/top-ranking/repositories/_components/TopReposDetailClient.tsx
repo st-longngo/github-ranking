@@ -6,9 +6,9 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Pagination from '@/components/common/Pagination';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatNumber } from '@/lib/utils';
-import type { TopReposPage, RepoItem } from '@/types/rankings';
+import RepoTable from '@/app/top-ranking/repositories/_components/RepoTable';
+import RankingSkeleton from '@/app/top-ranking/_components/RankingSkeleton';
+import type { TopReposPage } from '@/types/rankings';
 
 const TABS = ['Stars', 'Forks', 'Trending'] as const;
 type Tab = (typeof TABS)[number];
@@ -105,72 +105,6 @@ export default function TopReposDetailClient({ initialStarsData }: TopReposDetai
           <RepoTable repos={rightColumn} metricLabel={metricLabel} tab={tab} isFetching={isFetching} />
         </div>
       )}
-    </div>
-  );
-}
-
-function RepoTable({
-  repos,
-  metricLabel,
-  tab,
-  isFetching,
-}: {
-  repos: RepoItem[];
-  metricLabel: string;
-  tab: Tab;
-  isFetching: boolean;
-}) {
-  if (repos.length === 0) return null;
-  return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-border text-left text-xs font-medium text-muted">
-            <th className="w-16 px-4 py-2.5">Rank</th>
-            <th className="px-4 py-2.5">Repository</th>
-            <th className="px-4 py-2.5 text-right">{metricLabel}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {repos.map((repo) => (
-            <tr
-              key={repo.fullName}
-              className={`border-b border-border/30 ${isFetching ? 'opacity-50' : ''}`}
-            >
-              <td className="px-4 py-2 text-sm text-muted">{repo.rank}</td>
-              <td className="px-4 py-2">
-                <a
-                  href={repo.htmlUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-foreground hover:text-accent"
-                >
-                  {repo.fullName}
-                </a>
-              </td>
-              <td className="px-4 py-2 text-right text-sm tabular-nums text-muted">
-                {tab === 'Forks'
-                  ? formatNumber(repo.forkCount)
-                  : formatNumber(repo.starCount)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function RankingSkeleton() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {[0, 1].map((col) => (
-        <div key={col} className="space-y-2">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full rounded" />
-          ))}
-        </div>
-      ))}
     </div>
   );
 }

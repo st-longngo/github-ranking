@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Pagination from '@/components/common/Pagination';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatNumber } from '@/lib/utils';
-import type { TopUsersPage, TopUserItem } from '@/types/rankings';
+import UserTable from '@/app/top-ranking/users/_components/UserTable';
+import RankingSkeleton from '@/app/top-ranking/_components/RankingSkeleton';
+import type { TopUsersPage } from '@/types/rankings';
 
 interface TopUsersDetailClientProps {
   initialData: TopUsersPage;
@@ -70,67 +69,6 @@ export default function TopUsersDetailClient({ initialData }: TopUsersDetailClie
           <UserTable users={rightColumn} isFetching={isFetching} />
         </div>
       )}
-    </div>
-  );
-}
-
-function UserTable({ users, isFetching }: { users: TopUserItem[]; isFetching: boolean }) {
-  if (users.length === 0) return null;
-  return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-border text-left text-xs font-medium text-muted">
-            <th className="w-16 px-4 py-2.5">Rank</th>
-            <th className="px-4 py-2.5">User</th>
-            <th className="px-4 py-2.5 text-right">Followers</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr
-              key={user.login}
-              className={`border-b border-border/30 ${isFetching ? 'opacity-50' : ''}`}
-            >
-              <td className="px-4 py-2 text-sm text-muted">{user.rank}</td>
-              <td className="px-4 py-2">
-                <a
-                  href={user.htmlUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-accent"
-                >
-                  <Image
-                    src={user.avatarUrl}
-                    alt={user.login}
-                    className="h-5 w-5 rounded-full"
-                    width={20}
-                    height={20}
-                  />
-                  {user.login}
-                </a>
-              </td>
-              <td className="px-4 py-2 text-right text-sm tabular-nums text-muted">
-                {formatNumber(user.followers)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function RankingSkeleton() {
-  return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {[0, 1].map((col) => (
-        <div key={col} className="space-y-2">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full rounded" />
-          ))}
-        </div>
-      ))}
     </div>
   );
 }

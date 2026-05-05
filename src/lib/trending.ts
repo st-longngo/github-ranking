@@ -6,6 +6,7 @@ import type {
   RepoReleasesResponse,
   RepoSearchResult,
   StarDataPoint,
+  RepoDetailData,
 } from '@/types/rankings';
 import { appCache } from './cache';
 
@@ -292,5 +293,119 @@ export async function getRepoStarHistory(
     return points;
   } catch {
     return [];
+  }
+}
+
+const REPO_DETAIL_CACHE_TTL_MS = 15 * 60 * 1000; // 15 min
+
+interface GitHubRepoDetail {
+  full_name: string;
+  name: string;
+  html_url: string;
+  description: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  language: string | null;
+  license: { spdx_id: string | null; name: string } | null;
+  created_at: string;
+  pushed_at: string;
+  owner: { login: string; avatar_url: string };
+}
+
+export async function getRepoDetail(owner: string, repo: string): Promise<RepoDetailData | null> {
+  const fullName = `${owner}/${repo}`;
+  const cacheKey = `repo-detail:${fullName}`;
+
+  const cached = appCache.get<RepoDetailData>(cacheKey);
+  if (cached) return cached;
+
+  if (!process.env.GITHUB_TOKEN) return null;
+
+  try {
+    const repoRes = await fetch(
+      `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+      { headers: getAuthHeaders(), cache: 'no-store' },
+    );
+    if (!repoRes.ok) return null;
+
+    const repoData = (await repoRes.json()) as GitHubRepoDetail;
+
+    // Contributor count via Link header pagination trick
+    let contributorCount = 0;
+    try {
+      const contribRes = await fetch(
+        `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contributors?per_page=1&anon=true`,
+        { headers: getAuthHeaders(), cache: 'no-store' },
+      );
+      if (contribRes.ok) {
+        const linkHeader = contribRes.headers.get('Link');
+        if (linkHeader) {
+          const match = /page=(\d+)>; rel="last"/.exec(linkHeader);
+          if (match) contributorCount = parseInt(match[1], 10);
+        } else {
+          const body = (await contribRes.json()) as unknown[];
+          contributorCount = body.length;
+        }
+      }
+    } catch {
+      // contributor count is best-effort
+    }
+
+    // Weekly commit count (last 7 days)
+    let weeklyPushCount = 0;
+    try {
+      const since = sevenDaysAgo();
+      const commitsRes = await fetch(
+        `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits?since=${since}T00:00:00Z&per_page=100`,
+        { headers: getAuthHeaders(), cache: 'no-store' },
+      );
+      if (commitsRes.ok) {
+        const commits = (await commitsRes.json()) as unknown[];
+        weeklyPushCount = commits.length;
+      }
+    } catch {
+      // weekly push count is best-effort
+    }
+
+    // Weekly issues closed (last 7 days)
+    let weeklyIssuesClosed = 0;
+    try {
+      const since = sevenDaysAgo();
+      const issuesRes = await fetch(
+        `${GITHUB_API_BASE}/search/issues?q=repo:${owner}/${repo}+is:issue+is:closed+closed:>${since}&per_page=1`,
+        { headers: getAuthHeaders(), cache: 'no-store' },
+      );
+      if (issuesRes.ok) {
+        const issuesData = (await issuesRes.json()) as { total_count: number };
+        weeklyIssuesClosed = issuesData.total_count ?? 0;
+      }
+    } catch {
+      // weekly issues closed is best-effort
+    }
+
+    const result: RepoDetailData = {
+      fullName: repoData.full_name,
+      owner: repoData.owner.login,
+      name: repoData.name,
+      htmlUrl: repoData.html_url,
+      description: repoData.description,
+      ownerAvatar: repoData.owner.avatar_url,
+      starCount: repoData.stargazers_count,
+      forkCount: repoData.forks_count,
+      contributorCount,
+      language: repoData.language,
+      license: repoData.license?.spdx_id ?? repoData.license?.name ?? null,
+      createdAt: repoData.created_at,
+      pushedAt: repoData.pushed_at,
+      openIssuesCount: repoData.open_issues_count,
+      weeklyPushCount,
+      weeklyIssuesClosed,
+    };
+
+    appCache.set(cacheKey, result, REPO_DETAIL_CACHE_TTL_MS);
+    return result;
+  } catch {
+    return null;
   }
 }

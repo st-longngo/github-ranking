@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTopOrgs } from '@/lib/github';
-import TopOrgsDetailClient from '@/components/TopOrgsDetailClient';
+import TopOrgsDetailClient from '@/app/top-ranking/organizations/_components/TopOrgsDetailClient';
 
 export const metadata: Metadata = {
   title: 'Top Organizations',
@@ -11,7 +11,7 @@ export default async function TopOrgsPage() {
   const initialData = await getTopOrgs(1);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <TopOrgsDetailClient initialData={initialData} />
     </div>
   );

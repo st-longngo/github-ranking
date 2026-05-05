@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTopRepos, getTopUsers, getTopOrgs } from '@/lib/github';
-import TopRankingOverview from '@/components/TopRankingOverview';
+import TopRankingOverview from '@/app/top-ranking/_components/TopRankingOverview';
 
 export const metadata: Metadata = {
   title: 'Top Ranking',
@@ -15,13 +15,11 @@ export default async function TopRankingPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <TopRankingOverview
-        initialUsers={usersData}
-        initialOrgs={orgsData}
-        initialRepos={reposData}
-      />
-    </div>
+    <TopRankingOverview
+      initialUsers={usersData}
+      initialOrgs={orgsData}
+      initialRepos={reposData}
+    />
   );
 }
 

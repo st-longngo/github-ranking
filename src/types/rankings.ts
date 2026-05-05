@@ -68,6 +68,7 @@ export interface RepoItem {
   fullName: string; // e.g. "vercel/next.js"
   htmlUrl: string;
   description: string | null;
+  ownerAvatar?: string;
   starCount: number;
   forkCount: number;
   pushedAt: string; // ISO string
@@ -155,4 +156,31 @@ export interface RepoReleasesResponse {
 export interface StarDataPoint {
   date: string;  // "YYYY-MM-DD"
   stars: number; // cumulative star count
+}
+
+// ─── Repository Detail Page ───────────────────────────────────
+export interface RepoDetailData {
+  fullName: string;
+  owner: string;
+  name: string;
+  htmlUrl: string;
+  description: string | null;
+  ownerAvatar: string;
+  starCount: number;
+  forkCount: number;
+  contributorCount: number;
+  language: string | null;
+  license: string | null;
+  createdAt: string; // ISO string
+  pushedAt: string;  // ISO string
+  openIssuesCount: number;
+  weeklyPushCount: number;
+  weeklyIssuesClosed: number;
+}
+
+export interface NearbyRepo {
+  rank: number;
+  fullName: string;
+  starCount: number;
+  htmlUrl: string;
 }

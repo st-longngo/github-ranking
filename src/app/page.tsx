@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import LeaderboardExplorerClient from '@/components/LeaderboardExplorerClient';
+import TrendingFeed from '@/app/_components/TrendingFeed';
 
 export const metadata: Metadata = {
-  title: 'Leaderboard',
+  title: 'Explore',
   description:
-    'Explore trending GitHub repositories — weekly stars, all-time rankings, star history, and latest releases.',
+    'Discover trending GitHub repositories, top programming languages, and open-source projects.',
 };
 
-export default function LeaderboardPage() {
-  return <LeaderboardExplorerClient />;
+export default function ExplorePage() {
+  return <TrendingFeed />;
 }

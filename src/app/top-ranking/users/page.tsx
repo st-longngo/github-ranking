@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTopUsers } from '@/lib/github';
-import TopUsersDetailClient from '@/components/TopUsersDetailClient';
+import TopUsersDetailClient from '@/app/top-ranking/users/_components/TopUsersDetailClient';
 
 export const metadata: Metadata = {
   title: 'Top Users',
@@ -11,7 +11,7 @@ export default async function TopUsersPage() {
   const initialData = await getTopUsers(1);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <TopUsersDetailClient initialData={initialData} />
     </div>
   );
