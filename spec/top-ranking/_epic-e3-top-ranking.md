@@ -1,4 +1,4 @@
-# Epic E3 — Top Ranking
+# Epic E3 — Ranking
 
 **Epic ID**: E3
 **Status**: Planned
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Provide dedicated, metric-focused ranking screens that surface the **top programming languages** by a single dimension — Stars, Forks, and Trending activity — in a visually clear, tab-based interface. Where the Leaderboard (E2) ranks by composite score, Top Ranking lets users explore rankings from a single-metric perspective with minimal friction.
+Provide dedicated, metric-focused ranking screens that surface the **top programming languages** by a single dimension — Stars, Forks, and Trending activity — in a visually clear, tab-based interface. Where the Leaderboard (E2) ranks by composite score, Ranking lets users explore rankings from a single-metric perspective with minimal friction.
 
 ---
 
@@ -27,7 +27,7 @@ Provide dedicated, metric-focused ranking screens that surface the **top program
 - Three tab views: **Stars**, **Forks**, and **Trending** (activity in last 30 days).
 - Each tab renders a ranked list of all qualifying languages sorted by the selected single metric.
 - Data is sourced from the same cached ranking engine used by the Leaderboard — no additional API calls are made on page access.
-- Header navigation updated to include a "Top Ranking" link after "Leaderboard".
+- Header navigation updated to include a "Ranking" link after "Leaderboard".
 - Loading state with skeleton placeholders.
 - Responsive layout (mobile, tablet, desktop).
 
@@ -43,7 +43,7 @@ Provide dedicated, metric-focused ranking screens that surface the **top program
 
 | Feature ID | Name | Priority |
 |------------|------|----------|
-| [F3.1](./top-ranking-tabs.md) | Top Ranking Tabs Screen | P1 |
+| [F3.1](./top-ranking-tabs.md) | Ranking Tabs Screen | P1 |
 
 ---
 

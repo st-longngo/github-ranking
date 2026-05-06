@@ -7,7 +7,7 @@ import SettingsMenu from './SettingsMenu';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Explore' },
-  { href: '/top-ranking', label: 'Top Ranking' },
+  { href: '/ranking', label: 'Ranking' },
   { href: '/language', label: 'Languages' },
 ] as const;
 

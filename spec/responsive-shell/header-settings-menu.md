@@ -173,7 +173,7 @@ Extend the persistent header with a settings icon button on the right side. Clic
 ### AC-011 — How to Use Content
 **Given** the user is on the How to Use page/panel,
 **When** they view it,
-**Then** it explains: the site purpose, the composite score formula, how to navigate Explore and Top Ranking views, and how to add a GitHub token.
+**Then** it explains: the site purpose, the composite score formula, how to navigate Explore and Ranking views, and how to add a GitHub token.
 
 ### AC-012 — Keyboard Accessibility
 **Given** a keyboard-only user,

@@ -61,7 +61,7 @@ graph TD
 | `layout.tsx` | Root layout — sets metadata, loads fonts, wraps in `QueryProvider` + `Header` + `Footer` |
 | `page.tsx` | Leaderboard — renders `LeaderboardExplorerClient` |
 | `language/[slug]/page.tsx` | Language detail — dynamic SSR, `notFound()` guard, passes data to `LanguageReposClient` |
-| `top-ranking/page.tsx` | Top repos — SSR shell, delegates to `TopRankingClient` |
+| `ranking/page.tsx` | Top repos — SSR shell, delegates to `TopRankingClient` |
 | `error.tsx` | App-level error boundary (Client Component) |
 | `not-found.tsx` | 404 fallback |
 | `loading.tsx` | Suspense skeleton per route |

@@ -22,7 +22,7 @@ Hiện tại, tính năng xếp hạng ngôn ngữ lập trình hoạt động b
 
 Xây dựng lại tính năng Language Ranking theo kiến trúc offline-first: dữ liệu được thu thập tự động hàng ngày qua một cron job, lưu vào file CSV, và trang `/language` đọc trực tiếp từ file đó. Trang hiển thị bảng xếp hạng tất cả ngôn ngữ được hỗ trợ cùng với các chỉ số tổng hợp.
 
-Ngoài ra, thêm mục **"Languages"** vào thanh điều hướng (header), đặt bên phải mục "Top Ranking".
+Ngoài ra, thêm mục **"Languages"** vào thanh điều hướng (header), đặt bên phải mục "Ranking".
 
 ### 1.3 Reference
 
@@ -45,7 +45,7 @@ Kiến trúc thu thập và lưu trữ dữ liệu được lấy cảm hứng t
 ### US-LR-01 — Điều hướng đến trang Language Ranking từ header
 
 > **As a** developer browsing the site,  
-> **I want** to see a "Languages" navigation link in the header (to the right of "Top Ranking"),  
+> **I want** to see a "Languages" navigation link in the header (to the right of "Ranking"),  
 > **So that** I can quickly access the language ranking page from anywhere on the site.
 
 #### Acceptance Criteria — AC-LR-01-01
@@ -53,7 +53,7 @@ Kiến trúc thu thập và lưu trữ dữ liệu được lấy cảm hứng t
 ```
 Given  I am on any page of the application
 When   I view the header navigation bar
-Then   I see a "Languages" link positioned to the right of the "Top Ranking" link
+Then   I see a "Languages" link positioned to the right of the "Ranking" link
 ```
 
 #### Acceptance Criteria — AC-LR-01-02
@@ -234,7 +234,7 @@ And    remaining ranks show standard numbering
 
 | ID | Requirement |
 |----|-------------|
-| REQ-LR-001 | The header navigation MUST include a "Languages" link positioned after "Top Ranking" |
+| REQ-LR-001 | The header navigation MUST include a "Languages" link positioned after "Ranking" |
 | REQ-LR-002 | The /language page MUST display a table of all supported programming languages |
 | REQ-LR-003 | Each language row MUST display: rank, language name, total repos in CSV, total stars, total forks, last updated date |
 | REQ-LR-004 | The table MUST be sortable by: composite score (default), stars, repos, forks |
@@ -325,13 +325,13 @@ flowchart TD
 ### 8.1 Current Header Nav Order
 
 ```
-[Logo] [Home] [Top Ranking] [How to Use]
+[Logo] [Home] [Ranking] [How to Use]
 ```
 
 ### 8.2 Updated Header Nav Order
 
 ```
-[Logo] [Home] [Top Ranking] [Languages] [How to Use]
+[Logo] [Home] [Ranking] [Languages] [How to Use]
 ```
 
 ### 8.3 Link Specification
@@ -341,7 +341,7 @@ flowchart TD
 | Display label | `Languages` |
 | Target path | `/language` |
 | Active state | Highlighted when current path starts with `/language` |
-| Position | Right of "Top Ranking", left of "How to Use" |
+| Position | Right of "Ranking", left of "How to Use" |
 | Mobile | Included in mobile menu drawer |
 
 ---
@@ -418,7 +418,7 @@ The same set of languages as the current application supports. The exact list is
 
 | ID | Scenario | Expected Result |
 |----|----------|----------------|
-| AT-LR-001 | Navigate to site, observe header | "Languages" link appears after "Top Ranking" |
+| AT-LR-001 | Navigate to site, observe header | "Languages" link appears after "Ranking" |
 | AT-LR-002 | Click "Languages" link | Navigates to `/language` page; nav link is active |
 | AT-LR-003 | Visit `/language` with valid CSV present | Full ranking table rendered server-side; no spinner visible after initial load |
 | AT-LR-004 | Visit `/language` with no CSV present | Amber warning banner shown; no crash |

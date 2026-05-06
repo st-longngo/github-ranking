@@ -113,7 +113,7 @@ None — this is a public, read-only application with no admin portal.
 |---|------|-------------|
 | E1 | **Ranking Engine** | Fetch, process, and score programming languages from GitHub data |
 | E2 | **Leaderboard Explorer** | Two-panel explorer: trending sidebar + repository search, star history, and releases |
-| E3 | **Top Ranking** | Top repositories across all languages by stars, forks, and trending |
+| E3 | **Ranking** | Top repositories across all languages by stars, forks, and trending |
 | E4 | **Language Detail** | Show comprehensive metric breakdown for a single language |
 | E7 | **Responsive Shell** | App layout, navigation, dark mode, responsive design |
 

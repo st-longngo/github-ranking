@@ -1,7 +1,7 @@
-# Feature: Top Ranking Tabs Screen
+# Feature: Ranking Tabs Screen
 
 **Feature ID**: F3.1
-**Epic**: [E3 — Top Ranking](./_epic-e3-top-ranking.md)
+**Epic**: [E3 — Ranking](./_epic-e3-top-ranking.md)
 **Priority**: P1 — High
 
 ---
@@ -30,7 +30,7 @@ Deliver a dedicated `/top-ranking` screen that presents programming language ran
 - As a **developer**, I want to see languages ranked purely by fork count so that I can gauge which languages encourage the most derivative or collaborative work.
 - As an **engineering manager**, I want to see a "Trending" tab ranked by recent activity (last 30 days) so that I can identify which languages are gaining momentum right now.
 - As any user, I want to switch between Stars, Forks, and Trending views instantly without a full page reload so that comparing perspectives is frictionless.
-- As any user, I want to access the Top Ranking screen from the main navigation so that it is always one click away.
+- As any user, I want to access the Ranking screen from the main navigation so that it is always one click away.
 - As any user, I want the page to load instantly even on first visit so that I never experience delay due to API rate limits.
 
 ---
@@ -38,8 +38,8 @@ Deliver a dedicated `/top-ranking` screen that presents programming language ran
 ## 4. Requirements
 
 ### Navigation
-- **REQ-001**: The primary navigation header must include a "Top Ranking" link positioned immediately after "Leaderboard".
-- **REQ-002**: The "Top Ranking" link must display an active/highlighted state when the user is on the `/top-ranking` route.
+- **REQ-001**: The primary navigation header must include a "Ranking" link positioned immediately after "Leaderboard".
+- **REQ-002**: The "Ranking" link must display an active/highlighted state when the user is on the `/top-ranking` route.
 
 ### Tab Interface
 - **REQ-003**: The screen must present three tabs: **Stars**, **Forks**, and **Trending**.
@@ -80,7 +80,7 @@ Deliver a dedicated `/top-ranking` screen that presents programming language ran
 
 ## 5. Acceptance Criteria
 
-- **AC-001**: Given the user is on any page, when they click "Top Ranking" in the header, then they navigate to `/top-ranking` and the Stars tab is active by default.
+- **AC-001**: Given the user is on any page, when they click "Ranking" in the header, then they navigate to `/top-ranking` and the Stars tab is active by default.
 - **AC-002**: Given the user is on `/top-ranking`, when the Stars tab is active, then languages are ranked by star count descending, with star count displayed as the primary metric.
 - **AC-003**: Given the user is on `/top-ranking`, when the Forks tab is active, then languages are ranked by fork count descending, with fork count displayed as the primary metric.
 - **AC-004**: Given the user is on `/top-ranking`, when the Trending tab is active, then languages are ranked by activity count (30d) descending, with activity count displayed as the primary metric.
@@ -106,7 +106,7 @@ Deliver a dedicated `/top-ranking` screen that presents programming language ran
 | **Fallback data** | With `GITHUB_TOKEN` unset, the page renders with fallback data and a stale banner |
 | **Accessibility** | axe-core (or equivalent) reports zero critical violations on the tab panel |
 | **Responsive** | Layout passes visual review at 320px, 768px, and 1280px widths |
-| **Navigation highlight** | Active state on "Top Ranking" nav link is correct when on `/top-ranking` and absent on all other routes |
+| **Navigation highlight** | Active state on "Ranking" nav link is correct when on `/top-ranking` and absent on all other routes |
 
 ---
 

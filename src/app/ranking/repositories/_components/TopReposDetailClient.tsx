@@ -6,8 +6,8 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Pagination from '@/components/common/Pagination';
-import RepoTable from '@/app/top-ranking/repositories/_components/RepoTable';
-import RankingSkeleton from '@/app/top-ranking/_components/RankingSkeleton';
+import RepoTable from '@/app/ranking/repositories/_components/RepoTable';
+import RankingSkeleton from '@/app/ranking/_components/RankingSkeleton';
 import type { TopReposPage } from '@/types/rankings';
 
 const TABS = ['Stars', 'Forks', 'Trending'] as const;
@@ -61,11 +61,11 @@ export default function TopReposDetailClient({ initialStarsData }: TopReposDetai
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <Link
-            href="/top-ranking"
+            href="/ranking"
             className="mb-3 inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Top Ranking
+            Back to Ranking
           </Link>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Top Repositories</h1>
           <p className="text-sm text-muted">

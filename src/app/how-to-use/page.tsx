@@ -79,8 +79,8 @@ export default function HowToUsePage() {
 
           <NavItem
             icon={<BookMarked className="h-4 w-4" />}
-            title="Top Ranking — Repositories"
-            href="/top-ranking/repositories"
+            title="Ranking — Repositories"
+            href="/ranking/repositories"
           >
             Browse the 100 most-starred, most-forked, or most recently active repositories on
             GitHub. Switch tabs between <em>Stars</em>, <em>Forks</em>, and <em>Trending</em>,
@@ -89,8 +89,8 @@ export default function HowToUsePage() {
 
           <NavItem
             icon={<Users className="h-4 w-4" />}
-            title="Top Ranking — Users & Organisations"
-            href="/top-ranking/users"
+            title="Ranking — Users & Organisations"
+            href="/ranking/users"
           >
             See the highest-followed GitHub users and organisations ranked in order. Useful for
             spotting the most influential individuals and companies in the open-source ecosystem.

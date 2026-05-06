@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { getTopRepos, getTopUsers, getTopOrgs } from '@/services/github';
-import TopRankingOverview from '@/app/top-ranking/_components/TopRankingOverview';
+import TopRankingOverview from '@/app/ranking/_components/TopRankingOverview';
 
 export const metadata: Metadata = {
-  title: 'Top Ranking',
+  title: 'Ranking',
   description: 'Top GitHub users, organizations, and repositories ranked by stars.',
 };
 

@@ -11,7 +11,7 @@ GitHub Ranking is a read-only dashboard that ranks 30 programming languages by t
 It fetches live data from the GitHub REST Search API, computes a weighted composite score across four
 dimensions (stars, repositories, forks, activity), and presents results through an interactive
 Leaderboard Explorer (trending repo sidebar + repository search with star history chart and release
-browser), per-language detail views, and a Top Ranking page. The app renders entirely with React
+browser), per-language detail views, and a Ranking page. The app renders entirely with React
 Server Components for fast initial load and uses TanStack Query on the client for background refresh.
 When no `GITHUB_TOKEN` is configured it gracefully falls back to static demo data.
 

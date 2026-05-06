@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTopUsers } from '@/services/github';
-import TopUsersDetailClient from '@/app/top-ranking/users/_components/TopUsersDetailClient';
+import TopUsersDetailClient from '@/app/ranking/users/_components/TopUsersDetailClient';
 
 export const metadata: Metadata = {
   title: 'Top Users',

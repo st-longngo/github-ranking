@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { ChevronRight, Users, Building2, BookMarked } from 'lucide-react';
-import UsersSection from '@/app/top-ranking/_components/UsersSection';
-import OrgsSection from '@/app/top-ranking/_components/OrgsSection';
-import ReposSection from '@/app/top-ranking/_components/ReposSection';
+import UsersSection from '@/app/ranking/_components/UsersSection';
+import OrgsSection from '@/app/ranking/_components/OrgsSection';
+import ReposSection from '@/app/ranking/_components/ReposSection';
 import type { TopUsersPage, TopOrgsPage, TopReposPage } from '@/types/rankings';
 
 interface TopRankingOverviewProps {
@@ -27,7 +27,7 @@ export default function TopRankingOverview({
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Top Ranking</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Ranking</h1>
         <p className="mt-1 text-sm text-muted">
           Top GitHub users, organizations, and repositories ranked by popularity.
         </p>
@@ -42,7 +42,7 @@ export default function TopRankingOverview({
               <h2 className="text-lg font-semibold">Users</h2>
             </div>
             <Link
-              href="/top-ranking/users"
+              href="/ranking/users"
               className="flex items-center gap-0.5 text-sm text-accent hover:underline"
             >
               View all <ChevronRight className="h-3.5 w-3.5" />
@@ -59,7 +59,7 @@ export default function TopRankingOverview({
               <h2 className="text-lg font-semibold">Organizations</h2>
             </div>
             <Link
-              href="/top-ranking/organizations"
+              href="/ranking/organizations"
               className="flex items-center gap-0.5 text-sm text-accent hover:underline"
             >
               View all <ChevronRight className="h-3.5 w-3.5" />
@@ -76,7 +76,7 @@ export default function TopRankingOverview({
               <h2 className="text-lg font-semibold">Repositories</h2>
             </div>
             <Link
-              href="/top-ranking/repositories"
+              href="/ranking/repositories"
               className="flex items-center gap-0.5 text-sm text-accent hover:underline"
             >
               View all <ChevronRight className="h-3.5 w-3.5" />

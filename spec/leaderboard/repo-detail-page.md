@@ -10,7 +10,7 @@
 
 ## 1. Purpose & Scope
 
-Replace all current behaviours that open GitHub.com in a new tab when a repository item is clicked. Instead, clicking any repository item — from the Trending feed, Top Ranking table, or any ranked list — navigates the user to an **in-app repository detail page** at the route `/repo/:owner/:name`.
+Replace all current behaviours that open GitHub.com in a new tab when a repository item is clicked. Instead, clicking any repository item — from the Trending feed, Ranking table, or any ranked list — navigates the user to an **in-app repository detail page** at the route `/repo/:owner/:name`.
 
 The page is a three-panel layout inspired by star-history.com:
 
@@ -94,7 +94,7 @@ The page is a three-panel layout inspired by star-history.com:
 ### Navigation & Routing
 | ID | Requirement |
 |----|-------------|
-| **REQ-001** | Every repository item in the Trending feed, Top Ranking tables, and Top Ranking detail lists must navigate to `/repo/:owner/:name` on click instead of opening GitHub in a new tab. |
+| **REQ-001** | Every repository item in the Trending feed, Ranking tables, and Ranking detail lists must navigate to `/repo/:owner/:name` on click instead of opening GitHub in a new tab. |
 | **REQ-002** | The route must accept any public GitHub repository in the form `/repo/{owner}/{repo-name}`, where both segments are validated as valid GitHub identifiers. |
 | **REQ-003** | The page must be shareable — a user who arrives via a direct URL must see the fully populated detail page. |
 | **REQ-004** | The browser back button must return the user to the previous ranked list or feed. |

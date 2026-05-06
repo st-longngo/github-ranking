@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTopRepos } from '@/services/github';
-import TopReposDetailClient from '@/app/top-ranking/repositories/_components/TopReposDetailClient';
+import TopReposDetailClient from '@/app/ranking/repositories/_components/TopReposDetailClient';
 
 export const metadata: Metadata = {
   title: 'Top Repositories',

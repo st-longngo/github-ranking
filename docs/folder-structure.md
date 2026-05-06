@@ -51,8 +51,8 @@ github-ranking/
 │   │   │   └── [slug]/
 │   │   │       ├── page.tsx          # /language/:slug — Language detail
 │   │   │       └── loading.tsx
-│   │   └── top-ranking/
-│   │       ├── page.tsx              # /top-ranking — Top repos by stars/forks/trending
+│   │   └── ranking/
+│   │       ├── page.tsx              # /ranking — Top repos by stars/forks/trending
 │   │       └── loading.tsx
 │   │
 │   ├── components/                   # Shared UI components
@@ -261,7 +261,7 @@ e2e/                                 # Playwright E2E tests
 
 | Type | Convention | Example |
 |------|-----------|---------|
-| App routes | `kebab-case` | `app/top-ranking/`, `app/language/` |
+| App routes | `kebab-case` | `app/ranking/`, `app/language/` |
 | Dynamic segments | `[camelCase]` | `app/language/[slug]/` |
 | API routes | `kebab-case` | `app/api/language-repos/` |
 | Component subdirs | `PascalCase` | `components/layout/Header/` |
