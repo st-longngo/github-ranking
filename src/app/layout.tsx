@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "GitHub Language Rankings",
-    template: "%s | GitHub Language Rankings",
+    default: "GitPulse",
+    template: "%s | GitPulse",
   },
   description:
     "Real-time ranking of programming languages by GitHub activity — repositories, stars, forks, and commit momentum. Compare JavaScript, Python, TypeScript, Rust, Go, and 25+ more.",
@@ -30,24 +30,24 @@ export const metadata: Metadata = {
     "developer trends",
     "open source rankings",
   ],
-  authors: [{ name: "GitHub Language Rankings" }],
-  creator: "GitHub Language Rankings",
+  authors: [{ name: "GitPulse" }],
+  creator: "GitPulse",
   robots: {
     index: true,
     follow: true,
     googleBot: { index: true, follow: true },
   },
   openGraph: {
-    title: "GitHub Language Rankings",
+    title: "GitPulse",
     description:
       "Real-time ranking of programming languages by GitHub activity — repositories, stars, forks, and commit momentum.",
     type: "website",
     locale: "en_US",
-    siteName: "GitHub Language Rankings",
+    siteName: "GitPulse",
   },
   twitter: {
     card: "summary",
-    title: "GitHub Language Rankings",
+    title: "GitPulse",
     description:
       "Real-time ranking of programming languages by GitHub activity — repositories, stars, forks, and commit momentum.",
   },

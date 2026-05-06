@@ -4,7 +4,7 @@ import { ArrowLeft, Key, TrendingUp, BarChart2, BookMarked, Users } from 'lucide
 
 export const metadata: Metadata = {
   title: 'How to Use',
-  description: 'Learn how to use GitHub Ranking — explore trending repos, understand the composite score, and navigate all features.',
+  description: 'Learn how to use GitPulse — explore trending repos, understand the composite score, and navigate all features.',
 };
 
 export default function HowToUsePage() {
@@ -18,7 +18,7 @@ export default function HowToUsePage() {
         Back to Explore
       </Link>
 
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">How to use GitHub Ranking</h1>
+      <h1 className="mb-2 text-3xl font-bold tracking-tight">How to use GitPulse</h1>
       <p className="mb-10 text-base text-muted">
         A quick guide to everything this site can do.
       </p>
@@ -26,7 +26,7 @@ export default function HowToUsePage() {
       {/* Section 1 */}
       <Section title="What is this site?">
         <p>
-          GitHub Ranking is a read-only dashboard that ranks 30+ programming languages by real
+          GitPulse is a read-only dashboard that ranks 30+ programming languages by real
           GitHub activity. Instead of relying on surveys or search-engine hits, it fetches live data
           directly from the GitHub REST API and computes a weighted composite score across four
           dimensions.
@@ -153,7 +153,7 @@ export default function HowToUsePage() {
             </li>
             <li>
               <span className="mr-2 font-semibold">2.</span>
-              Give it any name (e.g. &ldquo;GitHub Ranking site&rdquo;).
+              Give it any name (e.g. &ldquo;GitPulse site&rdquo;).
             </li>
             <li>
               <span className="mr-2 font-semibold">3.</span>

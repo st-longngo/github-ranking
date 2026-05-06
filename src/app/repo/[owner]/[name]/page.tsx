@@ -11,7 +11,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { owner, name } = await params;
   return {
-    title: `${owner}/${name} — GitHub Ranking`,
+    title: `${owner}/${name} — GitPulse`,
     description: `Repository stats and star history for ${owner}/${name}.`,
   };
 }
