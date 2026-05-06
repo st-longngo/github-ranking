@@ -19,7 +19,7 @@ export default function RepoDetailClient({ owner, name }: RepoDetailClientProps)
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4" />
         Back

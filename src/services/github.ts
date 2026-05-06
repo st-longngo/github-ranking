@@ -3,8 +3,7 @@ import { appCache } from '../lib/cache';
 import { FALLBACK_METRICS } from './fallback-data';
 import { GitHubApiError, RateLimitError } from '../lib/errors';
 import { toLanguageSlug } from '../lib/utils';
-
-const GITHUB_API_BASE = 'https://api.github.com';
+import { env } from '@/lib/env';
 
 // Per-language SWR cache settings
 // Fresh window: serve as-is. After freshUntil, serve stale + trigger background refresh.
@@ -56,7 +55,7 @@ function thirtyDaysAgo(): string {
 
 async function searchRepos(lang: string): Promise<LanguageMetrics> {
   const encodedLang = encodeURIComponent(lang);
-  const url = `${GITHUB_API_BASE}/search/repositories?q=language:${encodedLang}&sort=stars&order=desc&per_page=100`;
+  const url = `${env.GITHUB_API_BASE}/search/repositories?q=language:${encodedLang}&sort=stars&order=desc&per_page=100`;
 
   const res = await fetch(url, {
     headers: getAuthHeaders(),
@@ -105,7 +104,7 @@ async function checkRateLimit(): Promise<number | null> {
   if (cached !== undefined) return cached;
 
   try {
-    const res = await fetch(`${GITHUB_API_BASE}/rate_limit`, {
+    const res = await fetch(`${env.GITHUB_API_BASE}/rate_limit`, {
       headers: getAuthHeaders(),
       cache: 'no-store',
     });
@@ -336,7 +335,7 @@ export async function getTopRepos(type: TopRepoType, page = 1): Promise<TopRepos
       params.set('sort', 'updated');
     }
 
-    const res = await fetch(`${GITHUB_API_BASE}/search/repositories?${params}`, {
+    const res = await fetch(`${env.GITHUB_API_BASE}/search/repositories?${params}`, {
       headers: getAuthHeaders(),
       cache: 'no-store',
     });
@@ -382,7 +381,7 @@ export async function getLanguageRepos(languageName: string): Promise<RepoItem[]
 
   try {
     const encodedLang = encodeURIComponent(languageName);
-    const url = `${GITHUB_API_BASE}/search/repositories?q=language:${encodedLang}&sort=stars&order=desc&per_page=100`;
+    const url = `${env.GITHUB_API_BASE}/search/repositories?q=language:${encodedLang}&sort=stars&order=desc&per_page=100`;
 
     const res = await fetch(url, {
       headers: getAuthHeaders(),
@@ -444,7 +443,7 @@ export async function getTopUsers(page = 1): Promise<TopUsersPage> {
       page: String(page),
     });
 
-    const res = await fetch(`${GITHUB_API_BASE}/search/users?${params}`, {
+    const res = await fetch(`${env.GITHUB_API_BASE}/search/users?${params}`, {
       headers: getAuthHeaders(),
       cache: 'no-store',
     });
@@ -494,7 +493,7 @@ export async function getTopOrgs(page = 1): Promise<TopOrgsPage> {
       page: String(page),
     });
 
-    const res = await fetch(`${GITHUB_API_BASE}/search/users?${params}`, {
+    const res = await fetch(`${env.GITHUB_API_BASE}/search/users?${params}`, {
       headers: getAuthHeaders(),
       cache: 'no-store',
     });

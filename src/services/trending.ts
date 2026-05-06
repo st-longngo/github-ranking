@@ -9,8 +9,7 @@ import type {
   RepoDetailData,
 } from '@/types/rankings';
 import { appCache } from '../lib/cache';
-
-const GITHUB_API_BASE = 'https://api.github.com';
+import { env } from '@/lib/env';
 const TRENDING_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 const RELEASES_CACHE_TTL_MS = 15 * 60 * 1000; // 15 min
 const MAX_SIDEBAR_REPOS = 20;
@@ -103,7 +102,7 @@ export async function getTrendingRepos(mode: TrendingMode): Promise<TrendingRepo
       params.set('page', String(randomPage));
     }
 
-    const res = await fetch(`${GITHUB_API_BASE}/search/repositories?${params}`, {
+    const res = await fetch(`${env.GITHUB_API_BASE}/search/repositories?${params}`, {
       headers: getAuthHeaders(),
       cache: 'no-store',
     });
@@ -143,7 +142,7 @@ export async function getRepoReleases(owner: string, repo: string): Promise<Repo
 
   try {
     const res = await fetch(
-      `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases?per_page=${MAX_RELEASES}`,
+      `${env.GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases?per_page=${MAX_RELEASES}`,
       { headers: getAuthHeaders(), cache: 'no-store' },
     );
 
@@ -183,7 +182,7 @@ export async function searchRepos(query: string): Promise<RepoSearchResult[]> {
       order: 'desc',
     });
 
-    const res = await fetch(`${GITHUB_API_BASE}/search/repositories?${params}`, {
+    const res = await fetch(`${env.GITHUB_API_BASE}/search/repositories?${params}`, {
       headers: getAuthHeaders(),
       cache: 'no-store',
     });
@@ -233,7 +232,7 @@ export async function getRepoStarHistory(
   try {
     // 1. Fetch repo info to get total star count
     const repoRes = await fetch(
-      `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+      `${env.GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
       { headers: getAuthHeaders(), cache: 'no-store' },
     );
     if (!repoRes.ok) return [];
@@ -264,7 +263,7 @@ export async function getRepoStarHistory(
       const results = await Promise.all(
         batch.map(async (page) => {
           const res = await fetch(
-            `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stargazers?per_page=${STAR_HISTORY_PER_PAGE}&page=${page}`,
+            `${env.GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/stargazers?per_page=${STAR_HISTORY_PER_PAGE}&page=${page}`,
             { headers: starHeaders, cache: 'no-store' },
           );
           if (!res.ok) return null;
@@ -324,7 +323,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
 
   try {
     const repoRes = await fetch(
-      `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
+      `${env.GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
       { headers: getAuthHeaders(), cache: 'no-store' },
     );
     if (!repoRes.ok) return null;
@@ -335,7 +334,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
     let contributorCount = 0;
     try {
       const contribRes = await fetch(
-        `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contributors?per_page=1&anon=true`,
+        `${env.GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contributors?per_page=1&anon=true`,
         { headers: getAuthHeaders(), cache: 'no-store' },
       );
       if (contribRes.ok) {
@@ -357,7 +356,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
     try {
       const since = sevenDaysAgo();
       const commitsRes = await fetch(
-        `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits?since=${since}T00:00:00Z&per_page=100`,
+        `${env.GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits?since=${since}T00:00:00Z&per_page=100`,
         { headers: getAuthHeaders(), cache: 'no-store' },
       );
       if (commitsRes.ok) {
@@ -373,7 +372,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
     try {
       const since = sevenDaysAgo();
       const issuesRes = await fetch(
-        `${GITHUB_API_BASE}/search/issues?q=repo:${owner}/${repo}+is:issue+is:closed+closed:>${since}&per_page=1`,
+        `${env.GITHUB_API_BASE}/search/issues?q=repo:${owner}/${repo}+is:issue+is:closed+closed:>${since}&per_page=1`,
         { headers: getAuthHeaders(), cache: 'no-store' },
       );
       if (issuesRes.ok) {

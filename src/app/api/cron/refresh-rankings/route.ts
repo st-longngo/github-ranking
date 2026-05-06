@@ -1,41 +1,56 @@
-import { getLanguageMetrics } from '@/services/github';
+import { fetchAllLanguagesRaw } from '@/services/cronFetcher';
+import { writeCsvFile } from '@/services/csvService';
 
 export const dynamic = 'force-dynamic';
+// Allow up to 300s — fetching 30 languages with 5-concurrent + 2s batch delay takes ~60s on cold start
+export const maxDuration = 300;
 
 /**
  * GET /api/cron/refresh-rankings
  *
- * Warms / refreshes the per-language metrics cache.
- * Call this on a schedule (e.g. every 4 minutes via Vercel Cron or an external scheduler)
- * so user-facing requests always hit a warm cache and never wait for live GitHub API calls.
+ * Fetches the top-100 repositories for every supported language from GitHub,
+ * then writes the results to a dated CSV file and updates `latest.csv`.
  *
- * Secured with CRON_SECRET to prevent unauthenticated triggers.
+ * Trigger daily at 00:00 UTC via Vercel Cron (configured in vercel.json).
  */
-export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${secret}`) {
-      return Response.json({ error: { code: 'UNAUTHORIZED', message: 'Invalid cron secret' } }, { status: 401 });
-    }
-  }
-
+export async function GET() {
   const start = Date.now();
+  const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
   try {
-    const { metrics, isStale } = await getLanguageMetrics();
-    const elapsed = Date.now() - start;
+    const { records, errors, tokensUsed, fromCache } = await fetchAllLanguagesRaw();
+
+    if (records.length === 0) {
+      return Response.json(
+        { error: { code: 'NO_DATA', message: 'GitHub API returned no records' } },
+        { status: 502 },
+      );
+    }
+
+    await writeCsvFile(records, date);
+
     return Response.json({
       data: {
-        refreshed: metrics.length,
-        isStale,
-        elapsedMs: elapsed,
+        date,
+        recordsWritten: records.length,
+        languagesFromCache: fromCache,
+        languagesWithErrors: errors.length,
+        tokensUsed,
+        errors,
+        elapsedMs: Date.now() - start,
       },
     });
   } catch (error) {
-    const elapsed = Date.now() - start;
     console.error('[cron/refresh-rankings] Failed:', error);
     return Response.json(
-      { error: { code: 'REFRESH_FAILED', message: 'Cache refresh failed' }, meta: { elapsedMs: elapsed } },
+      {
+        error: {
+          code: 'CRON_FAILED',
+          message: 'Cron job failed unexpectedly',
+          detail: error instanceof Error ? error.message : String(error),
+        },
+        meta: { elapsedMs: Date.now() - start },
+      },
       { status: 500 },
     );
   }
