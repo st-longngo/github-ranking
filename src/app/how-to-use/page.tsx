@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, Key, TrendingUp, BarChart2, BookMarked, Users } from 'lucide-react';
+import { Key, TrendingUp, BarChart2, BookMarked, Users } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'How to Use',
@@ -10,14 +10,6 @@ export const metadata: Metadata = {
 export default function HowToUsePage() {
   return (
     <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <Link
-        href="/"
-        className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to Explore
-      </Link>
-
       <h1 className="mb-2 text-3xl font-bold tracking-tight">How to use GitPulse</h1>
       <p className="mb-10 text-base text-muted">
         A quick guide to everything this site can do.
