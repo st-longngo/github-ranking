@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { getTopRepos, type TopRepoType } from '@/lib/github';
+import { getTopRepos, type TopRepoType } from '@/services/github';
 
 const VALID_TYPES = new Set<string>(['stars', 'forks', 'trending']);
 

@@ -1,4 +1,4 @@
-import { searchRepos } from '@/lib/trending';
+import { searchRepos } from '@/services/trending';
 
 export const dynamic = 'force-dynamic';
 

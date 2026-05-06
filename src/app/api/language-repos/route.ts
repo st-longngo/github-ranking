@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { getLanguageRepos } from '@/lib/github';
+import { getLanguageRepos } from '@/services/github';
 import { fromLanguageSlug } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';

@@ -8,7 +8,7 @@ import type {
   StarDataPoint,
   RepoDetailData,
 } from '@/types/rankings';
-import { appCache } from './cache';
+import { appCache } from '../lib/cache';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 const TRENDING_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min

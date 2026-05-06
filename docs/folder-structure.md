@@ -331,7 +331,7 @@ e2e/                                 # Playwright E2E tests
 ```tsx
 // src/app/<route>/page.tsx
 import type { Metadata } from 'next';
-import { getRankings } from '@/lib/rankings';
+import { getRankings } from '@/services/rankings';
 import FeatureClient from '@/components/FeatureClient';
 
 export const metadata: Metadata = {

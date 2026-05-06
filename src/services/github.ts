@@ -1,8 +1,8 @@
 import type { LanguageMetrics, RepoItem, TopReposPage, TopUserItem, TopUsersPage, TopOrgItem, TopOrgsPage } from '@/types/rankings';
-import { appCache } from './cache';
+import { appCache } from '../lib/cache';
 import { FALLBACK_METRICS } from './fallback-data';
-import { GitHubApiError, RateLimitError } from './errors';
-import { toLanguageSlug } from './utils';
+import { GitHubApiError, RateLimitError } from '../lib/errors';
+import { toLanguageSlug } from '../lib/utils';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 

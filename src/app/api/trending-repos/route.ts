@@ -1,4 +1,4 @@
-import { getTrendingRepos } from '@/lib/trending';
+import { getTrendingRepos } from '@/services/trending';
 import type { TrendingMode } from '@/types/rankings';
 
 export const dynamic = 'force-dynamic';

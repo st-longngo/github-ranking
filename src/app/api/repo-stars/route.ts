@@ -1,4 +1,4 @@
-import { getRepoStarHistory } from '@/lib/trending';
+import { getRepoStarHistory } from '@/services/trending';
 
 export const dynamic = 'force-dynamic';
 

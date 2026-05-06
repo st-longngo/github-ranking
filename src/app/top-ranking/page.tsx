@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTopRepos, getTopUsers, getTopOrgs } from '@/lib/github';
+import { getTopRepos, getTopUsers, getTopOrgs } from '@/services/github';
 import TopRankingOverview from '@/app/top-ranking/_components/TopRankingOverview';
 
 export const metadata: Metadata = {

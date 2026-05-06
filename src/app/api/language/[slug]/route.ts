@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { getLanguageRanking } from '@/lib/rankings';
+import { getLanguageRanking } from '@/services/rankings';
 import { fromLanguageSlug } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';

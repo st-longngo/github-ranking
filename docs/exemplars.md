@@ -210,7 +210,7 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
 **Patterns demonstrated**: `force-dynamic`, single-responsibility delegation to `lib/`, structured error response `{ error: { code, message } }`.
 
 ```ts
-import { getRankings } from '@/lib/rankings';
+import { getRankings } from '@/services/rankings';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server';
-import { getTopOrgs } from '@/lib/github';
+import { getTopOrgs } from '@/services/github';
 
 export async function GET(req: NextRequest) {
   const rawPage = req.nextUrl.searchParams.get('page') ?? '1';

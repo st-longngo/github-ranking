@@ -1,4 +1,4 @@
-import { getRankings } from '@/lib/rankings';
+import { getRankings } from '@/services/rankings';
 
 export const dynamic = 'force-dynamic';
 

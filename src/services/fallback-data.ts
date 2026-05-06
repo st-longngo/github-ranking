@@ -1,5 +1,5 @@
 import type { LanguageMetrics } from '@/types/rankings';
-import { toLanguageSlug } from './utils';
+import { toLanguageSlug } from '../lib/utils';
 
 // Pre-computed approximate values (GitHub state, early 2025)
 // Used as fallback when GitHub API is unavailable or TOKEN is not configured.

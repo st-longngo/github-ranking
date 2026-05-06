@@ -1,4 +1,4 @@
-import { getRepoReleases } from '@/lib/trending';
+import { getRepoReleases } from '@/services/trending';
 
 export const dynamic = 'force-dynamic';
 

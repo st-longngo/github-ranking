@@ -1,4 +1,4 @@
-import { getLanguageMetrics } from '@/lib/github';
+import { getLanguageMetrics } from '@/services/github';
 
 export const dynamic = 'force-dynamic';
 
