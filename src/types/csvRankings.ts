@@ -30,3 +30,27 @@ export interface CsvRankingData {
 
 export type LanguageSortColumn = 'compositeScore' | 'totalStars' | 'repoCount' | 'totalForks';
 export type SortDir = 'asc' | 'desc';
+
+/** Full data payload for a single language detail page. */
+export interface LanguageDetailData {
+  summary: LanguageSummary;
+  /** Percentile rank (0–100) of each metric relative to all languages. */
+  percentiles: {
+    compositeScore: number;
+    totalStars: number;
+    totalForks: number;
+    repoCount: number;
+    activityCount: number;
+  };
+  /** Normalised 0–100 position of each metric relative to the full language set. */
+  normalised: {
+    compositeScore: number;
+    totalStars: number;
+    totalForks: number;
+    repoCount: number;
+    activityCount: number;
+  };
+  related: LanguageSummary[];
+  allSummaries: LanguageSummary[];
+  topRepos: CsvRepoRecord[];
+}

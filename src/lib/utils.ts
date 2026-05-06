@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { env } from './env';
 
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
@@ -68,4 +69,18 @@ export function fromLanguageSlug(slug: string): string | undefined {
 /** Clamp a value between min and max (inclusive). */
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+/**
+ * Headers for authenticated GitHub requests. Centralised so callers can reuse
+ * a single implementation and override the env var name in one place.
+ */
+export function getAuthHeaders(): HeadersInit {
+  const token = env.GITHUB_TOKEN;
+  if (!token) return { Accept: 'application/vnd.github+json' };
+  return {
+    Accept: 'application/vnd.github+json',
+    Authorization: `Bearer ${token}`,
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
 }

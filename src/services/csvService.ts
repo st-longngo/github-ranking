@@ -1,13 +1,9 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import type { CsvRepoRecord, LanguageSummary, CsvRankingData } from '@/types/csvRankings';
-import { COMPOSITE_WEIGHTS } from '@/types/rankings';
+import type { CsvRepoRecord, LanguageSummary, CsvRankingData, LanguageDetailData } from '@/types/csvRankings';
+import { COMPOSITE_WEIGHTS, THIRTY_DAYS_MS } from '@/constants/rankings';
+import { DATA_DIR, LATEST_FILE, CSV_HEADER } from '@/constants/paths';
 import { toLanguageSlug } from '@/lib/utils';
-
-const DATA_DIR = path.join(process.cwd(), 'data', 'rankings');
-const LATEST_FILE = path.join(DATA_DIR, 'latest.csv');
-
-const CSV_HEADER = 'rank,item,repo_name,stars,forks,language,repo_description,last_commit';
 
 function escapeCsvField(value: string): string {
   if (value.includes(',') || value.includes('"') || value.includes('\n')) {
@@ -114,8 +110,6 @@ function minMaxNormalize(values: number[]): number[] {
   return values.map(v => ((v - min) / (max - min)) * 100);
 }
 
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-
 export function aggregateToLanguageSummaries(
   records: CsvRepoRecord[],
   dataDate: string,
@@ -177,28 +171,6 @@ export async function getLanguageRankingsFromCsv(): Promise<CsvRankingData | nul
 
   const summaries = aggregateToLanguageSummaries(result.records, result.dataDate);
   return { summaries, dataDate: result.dataDate };
-}
-
-export interface LanguageDetailData {
-  summary: LanguageSummary;
-  percentiles: {
-    compositeScore: number;
-    totalStars: number;
-    totalForks: number;
-    repoCount: number;
-    activityCount: number;
-  };
-  /** Normalised 0–100 position of each metric relative to the full language set */
-  normalised: {
-    compositeScore: number;
-    totalStars: number;
-    totalForks: number;
-    repoCount: number;
-    activityCount: number;
-  };
-  related: LanguageSummary[];
-  allSummaries: LanguageSummary[];
-  topRepos: CsvRepoRecord[];
 }
 
 function computePercentile(value: number, allValues: number[]): number {

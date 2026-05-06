@@ -8,22 +8,22 @@ import type {
   StarDataPoint,
   RepoDetailData,
 } from '@/types/rankings';
+import type { GitHubRepoItem, GitHubSearchResponse, GitHubRelease, GitHubStargazerItem, GitHubRepoDetail } from '@/types/github';
 import { appCache } from '../lib/cache';
 import { env } from '@/lib/env';
-const TRENDING_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
-const RELEASES_CACHE_TTL_MS = 15 * 60 * 1000; // 15 min
-const MAX_SIDEBAR_REPOS = 20;
-const MAX_RELEASES = 10;
-
-function getAuthHeaders(): HeadersInit {
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) return { Accept: 'application/vnd.github+json' };
-  return {
-    Accept: 'application/vnd.github+json',
-    Authorization: `Bearer ${token}`,
-    'X-GitHub-Api-Version': '2022-11-28',
-  };
-}
+import { getAuthHeaders } from '@/lib/utils';
+import {
+  TRENDING_CACHE_TTL_MS,
+  RELEASES_CACHE_TTL_MS,
+  STAR_HISTORY_CACHE_TTL_MS,
+  REPO_DETAIL_CACHE_TTL_MS,
+} from '@/constants/cache';
+import {
+  MAX_SIDEBAR_REPOS,
+  MAX_RELEASES,
+  STAR_HISTORY_PER_PAGE,
+  STAR_HISTORY_MAX_SAMPLES,
+} from '@/constants/pagination';
 
 function sevenDaysAgo(): string {
   const d = new Date();
@@ -31,31 +31,9 @@ function sevenDaysAgo(): string {
   return d.toISOString().split('T')[0];
 }
 
-interface GitHubSearchItem {
-  full_name: string;
-  html_url: string;
-  description: string | null;
-  stargazers_count: number;
-  forks_count: number;
-  pushed_at: string;
-  owner: { avatar_url: string };
-}
+type GitHubSearchRepos = GitHubSearchResponse<GitHubRepoItem>;
 
-interface GitHubSearchResponse {
-  total_count: number;
-  items: GitHubSearchItem[];
-}
-
-interface GitHubRelease {
-  tag_name: string;
-  name: string | null;
-  published_at: string;
-  html_url: string;
-  draft: boolean;
-  prerelease: boolean;
-}
-
-function mapToTrendingRepo(item: GitHubSearchItem, rank: number, weeklyDelta: number): TrendingRepo {
+function mapToTrendingRepo(item: GitHubRepoItem, rank: number, weeklyDelta: number): TrendingRepo {
   return {
     rank,
     fullName: item.full_name,
@@ -111,7 +89,7 @@ export async function getTrendingRepos(mode: TrendingMode): Promise<TrendingRepo
       return { repos: [], mode, isStale: true };
     }
 
-    const json = (await res.json()) as GitHubSearchResponse;
+    const json = (await res.json()) as GitHubSearchRepos;
 
     const repos: TrendingRepo[] = json.items.map((item, i) =>
       mapToTrendingRepo(item, i + 1, mode === 'weekly' ? item.stargazers_count : 0),
@@ -189,7 +167,7 @@ export async function searchRepos(query: string): Promise<RepoSearchResult[]> {
 
     if (!res.ok) return [];
 
-    const json = (await res.json()) as GitHubSearchResponse;
+    const json = (await res.json()) as GitHubSearchRepos;
 
     return json.items.map(item => ({
       fullName: item.full_name,
@@ -200,14 +178,6 @@ export async function searchRepos(query: string): Promise<RepoSearchResult[]> {
   } catch {
     return [];
   }
-}
-
-const STAR_HISTORY_CACHE_TTL_MS = 30 * 60 * 1000; // 30 min
-const STAR_HISTORY_PER_PAGE = 100;
-const STAR_HISTORY_MAX_SAMPLES = 10;
-
-interface StargazerItem {
-  starred_at: string;
 }
 
 function getStarHeaders(): Record<string, string> {
@@ -267,7 +237,7 @@ export async function getRepoStarHistory(
             { headers: starHeaders, cache: 'no-store' },
           );
           if (!res.ok) return null;
-          const items = (await res.json()) as StargazerItem[];
+          const items = (await res.json()) as GitHubStargazerItem[];
           if (items.length === 0) return null;
           return {
             date: items[items.length - 1].starred_at.split('T')[0],
@@ -293,23 +263,6 @@ export async function getRepoStarHistory(
   } catch {
     return [];
   }
-}
-
-const REPO_DETAIL_CACHE_TTL_MS = 15 * 60 * 1000; // 15 min
-
-interface GitHubRepoDetail {
-  full_name: string;
-  name: string;
-  html_url: string;
-  description: string | null;
-  stargazers_count: number;
-  forks_count: number;
-  open_issues_count: number;
-  language: string | null;
-  license: { spdx_id: string | null; name: string } | null;
-  created_at: string;
-  pushed_at: string;
-  owner: { login: string; avatar_url: string };
 }
 
 export async function getRepoDetail(owner: string, repo: string): Promise<RepoDetailData | null> {

@@ -2,16 +2,16 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 import type { CsvRepoRecord } from '@/types/csvRankings';
+import type { GitHubRepoItem, GitHubSearchResponse } from '@/types/github';
 import { env } from '@/lib/env';
-import { LANGUAGES } from './github';
+import { LANGUAGES } from '@/constants/languages';
+import { CHECKPOINT_BASE } from '@/constants/paths';
 
 // ---------------------------------------------------------------------------
 // Checkpoint helpers — persist per-language results so a re-run on the same
 // day resumes where it left off instead of re-fetching already-completed langs.
 // Files: data/rankings/checkpoint/<YYYY-MM-DD>/<Language>.json
 // ---------------------------------------------------------------------------
-
-const CHECKPOINT_BASE = path.join(process.cwd(), 'data', 'rankings', 'checkpoint');
 
 function checkpointDir(date: string): string {
   return path.join(CHECKPOINT_BASE, date);
@@ -46,19 +46,6 @@ async function loadAllCheckpoints(date: string, langs: string[]): Promise<Map<st
   return cached;
 }
 
-interface GitHubRepoItem {
-  full_name: string;
-  name: string;
-  stargazers_count: number;
-  forks_count: number;
-  description: string | null;
-  pushed_at: string;
-}
-
-interface GitHubSearchResponse {
-  total_count: number;
-  items: GitHubRepoItem[];
-}
 
 /**
  * Parse CRON_SECRET env var — supports comma-separated list of tokens for rotation.
@@ -132,7 +119,7 @@ async function fetchReposForLanguage(
       throw new Error(`GitHub API ${res.status} for language "${lang}"`);
     }
 
-    const json = (await res.json()) as GitHubSearchResponse;
+    const json = (await res.json()) as GitHubSearchResponse<GitHubRepoItem>;
     return json.items.map((item, i) => ({
       rank: i + 1,
       item: item.full_name,
